@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Defense - English Typing Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes approach {
+            from { 
+                transform: translateZ(-1000px) scale(0.1);
+                opacity: 0.3;
+            }
+            to { 
+                transform: translateZ(0) scale(1.5);
+                opacity: 1;
+            }
+        }
+        
+        .approaching-word {
+            animation: approach linear;
+            perspective: 1000px;
+            transform-style: preserve-3d;
+        }
+        
+        .letter {
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+        
+        .letter.typed {
+            background: #10b981;
+            color: white;
+            transform: scale(1.1);
+            border-radius: 4px;
+            padding: 0 2px;
+        }
+        
+        .letter.current {
+            background: #f59e0b;
+            color: white;
+            transform: scale(1.2);
+            border-radius: 4px;
+            padding: 0 2px;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .shake {
+            animation: shake 0.3s ease-in-out;
+        }
+        
+        @keyframes pulse-success {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse-success {
+            animation: pulse-success 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-mono overflow-hidden">
+    <!-- Dark mode detection -->
+    <script>
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
+
+    <!-- Game Container -->
+    <div class="h-screen relative overflow-hidden">
+        <!-- Header Stats -->
+        <div class="absolute top-0 left-0 right-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm p-4">
+            <div class="flex justify-between items-center max-w-6xl mx-auto">
+                <div class="flex space-x-6">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-primary" id="score">0</div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400">SCORE</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-500" id="wpm">0</div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400">WPM</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-blue-500" id="accuracy">100%</div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400">ACCURACY</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-purple-500" id="level">1</div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400">LEVEL</div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-red-500" id="lives">3</div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400">LIVES</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-sm font-bold text-orange-500" id="wordSource">DEFAULT</div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400">WORDS</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-sm font-bold text-purple-500" id="gameMode">NORMAL</div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400">MODE</div>
+                    </div>
+                    <button id="translationBtn" class="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors text-sm">
+                        中文 ON
+                    </button>
+                    <button id="pauseBtn" class="px-4 py-2 bg-primary text-white rounded hover:bg-primary/80 transition-colors">
+                        PAUSE
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Area -->
+        <div id="gameArea" class="h-full relative bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
+            <!-- Falling words will be added here -->
+        </div>
+
+        <!-- Input Area -->
+        <div class="absolute bottom-0 left-0 right-0 z-10 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm p-4">
+            <div class="max-w-2xl mx-auto">
+                <input 
+                    type="text" 
+                    id="wordInput" 
+                    class="w-full text-2xl p-4 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary focus:outline-none transition-colors text-base"
+                    placeholder="Type the words here..."
+                    autocomplete="off"
+                    spellcheck="false"
+                >
+                <div class="mt-2 text-center text-gray-600 dark:text-gray-400">
+                    <span id="currentTarget">Start typing to begin!</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameOverScreen" class="absolute inset-0 bg-black/80 flex items-center justify-center z-20 hidden">
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-2xl text-center max-w-md mx-4">
+                <h2 class="text-3xl font-bold mb-4 text-red-500">GAME OVER</h2>
+                <div class="space-y-2 mb-6">
+                    <p class="text-xl">Final Score: <span id="finalScore" class="font-bold text-primary">0</span></p>
+                    <p>Words Per Minute: <span id="finalWpm" class="font-bold text-green-500">0</span></p>
+                    <p>Accuracy: <span id="finalAccuracy" class="font-bold text-blue-500">0%</span></p>
+                    <p>Level Reached: <span id="finalLevel" class="font-bold text-purple-500">1</span></p>
+                </div>
+                <button id="restartBtn" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors">
+                    PLAY AGAIN
+                </button>
+            </div>
+        </div>
+
+        <!-- Pause Screen -->
+        <div id="pauseScreen" class="absolute inset-0 bg-black/80 flex items-center justify-center z-20 hidden">
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-2xl text-center">
+                <h2 class="text-3xl font-bold mb-6">PAUSED</h2>
+                <button id="resumeBtn" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors">
+                    RESUME
+                </button>
+            </div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="startScreen" class="absolute inset-0 bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center z-20">
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-2xl text-center max-w-lg mx-4">
+                <h1 class="text-4xl font-bold mb-4 text-primary">TYPING DEFENSE</h1>
+                <p class="text-gray-600 dark:text-gray-400 mb-6">
+                    Type the approaching words to destroy them before they get too close!<br>
+                    Words zoom toward you from the distance. Lose all 3 lives and it's game over.
+                </p>
+                <div class="text-left mb-6 text-sm space-y-1">
+                    <p><strong>Controls:</strong></p>
+                    <p>• Type words letter by letter</p>
+                    <p>• Green = typed correctly, Yellow = current letter</p>
+                    <p>• Higher levels = faster approach speed</p>
+                    <p>• Longer words = more points</p>
+                    <p>• Press Escape to clear input</p>
+                </div>
+                
+                <!-- CSV Upload Section -->
+                <div class="mb-6 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                    <h3 class="text-lg font-bold mb-3">Custom Word List</h3>
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                        Upload a CSV file with your own words and translations.<br>
+                        Format: <code class="bg-gray-200 dark:bg-gray-600 px-1 rounded">word,translation</code>
+                    </div>
+                    <div class="flex flex-col space-y-3">
+                        <input 
+                            type="file" 
+                            id="csvFileInput" 
+                            accept=".csv,.txt" 
+                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/80"
+                        >
+                        <div class="flex space-x-2">
+                            <button id="loadCsvBtn" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-sm">
+                                LOAD CSV
+                            </button>
+                            <button id="clearCsvBtn" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors text-sm">
+                                USE DEFAULT
+                            </button>
+                        </div>
+                        <div id="csvStatus" class="text-sm"></div>
+                    </div>
+                </div>
+                
+                <!-- Game Mode Selection -->
+                <div id="gameModeSection" class="mb-6 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg hidden">
+                    <h3 class="text-lg font-bold mb-3">Game Mode</h3>
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                        Choose your game mode with custom words.
+                    </div>
+                    <div class="flex space-x-3">
+                        <button id="normalModeBtn" class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors text-sm">
+                            NORMAL MODE
+                        </button>
+                        <button id="dictationModeBtn" class="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600 transition-colors text-sm">
+                            DICTATION MODE
+                        </button>
+                    </div>
+                    <div class="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                        Normal: Type English words | Dictation: See Chinese, type English
+                    </div>
+                </div>
+                
+                <button id="startBtn" class="px-8 py-4 bg-primary text-white text-xl rounded-lg hover:bg-primary/80 transition-colors">
+                    START GAME
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TypingGame {
+            constructor() {
+                this.words = [
+                    // Easy words (3-5 letters)
+                    { word: 'cat', translation: '貓' },
+                    { word: 'dog', translation: '狗' },
+                    { word: 'run', translation: '跑' },
+                    { word: 'jump', translation: '跳' },
+                    { word: 'walk', translation: '走' },
+                    { word: 'talk', translation: '說話' },
+                    { word: 'read', translation: '讀' },
+                    { word: 'book', translation: '書' },
+                    { word: 'play', translation: '玩' },
+                    { word: 'game', translation: '遊戲' },
+                    { word: 'fire', translation: '火' },
+                    { word: 'water', translation: '水' },
+                    { word: 'earth', translation: '地球' },
+                    { word: 'wind', translation: '風' },
+                    { word: 'light', translation: '光' },
+                    { word: 'dark', translation: '暗' },
+                    { word: 'fast', translation: '快' },
+                    { word: 'slow', translation: '慢' },
+                    { word: 'big', translation: '大' },
+                    { word: 'small', translation: '小' },
+                    { word: 'happy', translation: '快樂' },
+                    { word: 'angry', translation: '生氣' },
+                    { word: 'quick', translation: '迅速' },
+                    { word: 'brown', translation: '棕色' },
+                    { word: 'black', translation: '黑色' },
+                    { word: 'white', translation: '白色' },
+                    { word: 'green', translation: '綠色' },
+                    { word: 'music', translation: '音樂' },
+                    { word: 'dance', translation: '跳舞' },
+                    { word: 'write', translation: '寫' },
+                    
+                    // Medium words (6-8 letters)
+                    { word: 'computer', translation: '電腦' },
+                    { word: 'keyboard', translation: '鍵盤' },
+                    { word: 'monitor', translation: '螢幕' },
+                    { word: 'speaker', translation: '揚聲器' },
+                    { word: 'printer', translation: '印表機' },
+                    { word: 'network', translation: '網路' },
+                    { word: 'internet', translation: '網際網路' },
+                    { word: 'website', translation: '網站' },
+                    { word: 'download', translation: '下載' },
+                    { word: 'upload', translation: '上傳' },
+                    { word: 'software', translation: '軟體' },
+                    { word: 'hardware', translation: '硬體' },
+                    { word: 'program', translation: '程式' },
+                    { word: 'function', translation: '功能' },
+                    { word: 'variable', translation: '變數' },
+                    { word: 'database', translation: '資料庫' },
+                    { word: 'graphics', translation: '圖形' },
+                    { word: 'digital', translation: '數位' },
+                    { word: 'virtual', translation: '虛擬' },
+                    { word: 'machine', translation: '機器' },
+                    { word: 'science', translation: '科學' },
+                    { word: 'technology', translation: '技術' },
+                    { word: 'advanced', translation: '先進' },
+                    { word: 'modern', translation: '現代' },
+                    
+                    // Hard words (9+ letters)
+                    { word: 'programming', translation: '程式設計' },
+                    { word: 'development', translation: '開發' },
+                    { word: 'algorithm', translation: '演算法' },
+                    { word: 'structure', translation: '結構' },
+                    { word: 'framework', translation: '框架' },
+                    { word: 'architecture', translation: '架構' },
+                    { word: 'optimization', translation: '最佳化' },
+                    { word: 'performance', translation: '效能' },
+                    { word: 'intelligence', translation: '智慧' },
+                    { word: 'automation', translation: '自動化' },
+                    { word: 'integration', translation: '整合' },
+                    { word: 'implementation', translation: '實作' },
+                    { word: 'communication', translation: '溝通' },
+                    { word: 'authentication', translation: '驗證' },
+                    { word: 'configuration', translation: '設定' },
+                    { word: 'documentation', translation: '文件' },
+                    { word: 'specification', translation: '規格' }
+                ];
+                
+                this.gameState = {
+                    isPlaying: false,
+                    isPaused: false,
+                    score: 0,
+                    lives: 3,
+                    level: 1,
+                    wordsTyped: 0,
+                    totalCharacters: 0,
+                    correctCharacters: 0,
+                    startTime: null,
+                    fallingWords: [],
+                    wordIdCounter: 0,
+                    showTranslation: true,
+                    gameMode: 'normal' // 'normal' or 'dictation'
+                };
+                
+                this.defaultWords = [...this.words]; // Store original words
+                this.customWords = null; // Store custom uploaded words
+                
+                this.gameSpeed = 1;
+                this.spawnRate = 2000; // milliseconds
+                this.lastSpawnTime = 0;
+                
+                this.initializeElements();
+                this.attachEventListeners();
+            }
+            
+            initializeElements() {
+                this.elements = {
+                    gameArea: document.getElementById('gameArea'),
+                    wordInput: document.getElementById('wordInput'),
+                    currentTarget: document.getElementById('currentTarget'),
+                    
+                    // Stats
+                    score: document.getElementById('score'),
+                    wpm: document.getElementById('wpm'),
+                    accuracy: document.getElementById('accuracy'),
+                    level: document.getElementById('level'),
+                    lives: document.getElementById('lives'),
+                    wordSource: document.getElementById('wordSource'),
+                    
+                    // Screens
+                    startScreen: document.getElementById('startScreen'),
+                    gameOverScreen: document.getElementById('gameOverScreen'),
+                    pauseScreen: document.getElementById('pauseScreen'),
+                    
+                    // Buttons
+                    startBtn: document.getElementById('startBtn'),
+                    restartBtn: document.getElementById('restartBtn'),
+                    pauseBtn: document.getElementById('pauseBtn'),
+                    resumeBtn: document.getElementById('resumeBtn'),
+                    translationBtn: document.getElementById('translationBtn'),
+                    loadCsvBtn: document.getElementById('loadCsvBtn'),
+                    clearCsvBtn: document.getElementById('clearCsvBtn'),
+                    
+                    // CSV elements
+                    csvFileInput: document.getElementById('csvFileInput'),
+                    csvStatus: document.getElementById('csvStatus'),
+                    
+                    // Game mode elements
+                    gameModeSection: document.getElementById('gameModeSection'),
+                    normalModeBtn: document.getElementById('normalModeBtn'),
+                    dictationModeBtn: document.getElementById('dictationModeBtn'),
+                    gameMode: document.getElementById('gameMode'),
+                    
+                    // Final stats
+                    finalScore: document.getElementById('finalScore'),
+                    finalWpm: document.getElementById('finalWpm'),
+                    finalAccuracy: document.getElementById('finalAccuracy'),
+                    finalLevel: document.getElementById('finalLevel')
+                };
+            }
+            
+            attachEventListeners() {
+                this.elements.startBtn.addEventListener('click', () => this.startGame());
+                this.elements.restartBtn.addEventListener('click', () => this.restartGame());
+                this.elements.pauseBtn.addEventListener('click', () => this.togglePause());
+                this.elements.resumeBtn.addEventListener('click', () => this.togglePause());
+                this.elements.translationBtn.addEventListener('click', () => this.toggleTranslation());
+                this.elements.loadCsvBtn.addEventListener('click', () => this.loadCustomWords());
+                this.elements.clearCsvBtn.addEventListener('click', () => this.useDefaultWords());
+                this.elements.normalModeBtn.addEventListener('click', () => this.setGameMode('normal'));
+                this.elements.dictationModeBtn.addEventListener('click', () => this.setGameMode('dictation'));
+                
+                this.elements.wordInput.addEventListener('input', (e) => this.handleInput(e));
+                this.elements.wordInput.addEventListener('keydown', (e) => this.handleKeydown(e));
+                
+                // Focus input when clicking on game area
+                this.elements.gameArea.addEventListener('click', () => {
+                    if (this.gameState.isPlaying && !this.gameState.isPaused) {
+                        this.elements.wordInput.focus();
+                    }
+                });
+            }
+            
+            startGame() {
+                // Preserve translation setting and game mode
+                const currentTranslationSetting = this.gameState.showTranslation;
+                const currentGameMode = this.gameState.gameMode;
+                
+                this.gameState = {
+                    isPlaying: true,
+                    isPaused: false,
+                    score: 0,
+                    lives: 3,
+                    level: 1,
+                    wordsTyped: 0,
+                    totalCharacters: 0,
+                    correctCharacters: 0,
+                    startTime: Date.now(),
+                    fallingWords: [],
+                    wordIdCounter: 0,
+                    showTranslation: currentTranslationSetting,
+                    gameMode: currentGameMode
+                };
+                
+                this.gameSpeed = 1;
+                this.spawnRate = 2000;
+                this.lastSpawnTime = 0;
+                
+                this.elements.startScreen.classList.add('hidden');
+                this.elements.gameOverScreen.classList.add('hidden');
+                this.elements.wordInput.focus();
+                this.elements.wordInput.value = '';
+                this.elements.currentTarget.textContent = 'Type the falling words!';
+                
+                // Clear any existing words
+                this.elements.gameArea.innerHTML = '';
+                
+                this.updateStats();
+                this.gameLoop();
+            }
+            
+            restartGame() {
+                this.startGame();
+            }
+            
+            togglePause() {
+                this.gameState.isPaused = !this.gameState.isPaused;
+                
+                if (this.gameState.isPaused) {
+                    this.elements.pauseScreen.classList.remove('hidden');
+                    this.elements.pauseBtn.textContent = 'RESUME';
+                } else {
+                    this.elements.pauseScreen.classList.add('hidden');
+                    this.elements.pauseBtn.textContent = 'PAUSE';
+                    this.elements.wordInput.focus();
+                }
+            }
+            
+            gameLoop() {
+                if (!this.gameState.isPlaying) return;
+                
+                if (!this.gameState.isPaused) {
+                    this.updateFallingWords();
+                    this.spawnWord();
+                    this.checkCollisions();
+                    this.updateStats();
+                }
+                
+                requestAnimationFrame(() => this.gameLoop());
+            }
+            
+            spawnWord() {
+                const now = Date.now();
+                if (now - this.lastSpawnTime > this.spawnRate / this.gameSpeed) {
+                    const word = this.getRandomWord();
+                    this.createFallingWord(word);
+                    this.lastSpawnTime = now;
+                }
+            }
+            
+            toggleTranslation() {
+                this.gameState.showTranslation = !this.gameState.showTranslation;
+                
+                // Update button text
+                this.elements.translationBtn.textContent = this.gameState.showTranslation ? '中文 ON' : '中文 OFF';
+                this.elements.translationBtn.className = this.gameState.showTranslation ? 
+                    'px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors text-sm' :
+                    'px-3 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors text-sm';
+                
+                // Update existing words
+                this.gameState.fallingWords.forEach(wordObj => {
+                    this.updateWordDisplay(wordObj);
+                });
+            }
+
+            getRandomWord() {
+                const level = this.gameState.level;
+                let availableWords;
+                
+                // For custom words, use all words regardless of level to ensure all uploaded words appear
+                if (this.customWords && this.customWords.length > 0) {
+                    availableWords = this.words;
+                } else {
+                    // For default words, use level-based filtering
+                    if (level <= 2) {
+                        // Easy words only
+                        availableWords = this.words.filter(wordData => wordData.word.length <= 5);
+                    } else if (level <= 5) {
+                        // Easy and medium words
+                        availableWords = this.words.filter(wordData => wordData.word.length <= 8);
+                    } else {
+                        // All words
+                        availableWords = this.words;
+                    }
+                }
+                
+                return availableWords[Math.floor(Math.random() * availableWords.length)];
+            }
+            
+            createFallingWord(wordData) {
+                const wordElement = document.createElement('div');
+                wordElement.className = 'absolute font-bold px-4 py-2 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-lg approaching-word';
+                wordElement.id = `word-${this.gameState.wordIdCounter++}`;
+                
+                this.elements.gameArea.appendChild(wordElement);
+                
+                const wordObj = {
+                    element: wordElement,
+                    word: wordData.word,
+                    translation: wordData.translation,
+                    id: wordElement.id,
+                    typedLetters: 0,
+                    isActive: false
+                };
+                
+                this.gameState.fallingWords.push(wordObj);
+                
+                // Set up display
+                this.updateWordDisplay(wordObj);
+                
+                // Random position in a circle around center
+                const centerX = this.elements.gameArea.clientWidth / 2;
+                const centerY = this.elements.gameArea.clientHeight / 2;
+                const angle = Math.random() * 2 * Math.PI;
+                const radius = Math.min(this.elements.gameArea.clientWidth, this.elements.gameArea.clientHeight) * 0.3;
+                
+                const x = centerX + Math.cos(angle) * radius - 100; // -100 for word width adjustment
+                const y = centerY + Math.sin(angle) * radius - 50; // -50 for word height adjustment (increased for translation)
+                
+                wordElement.style.left = Math.max(0, Math.min(x, this.elements.gameArea.clientWidth - 200)) + 'px';
+                wordElement.style.top = Math.max(0, Math.min(y, this.elements.gameArea.clientHeight - 200)) + 'px';
+                
+                // Animation duration based on level (faster at higher levels)
+                const duration = Math.max(4, 10 - this.gameState.level * 0.8);
+                wordElement.style.animationDuration = duration + 's';
+            }
+            
+            updateWordDisplay(wordObj) {
+                const word = wordObj.word;
+                const translation = wordObj.translation;
+                
+                if (this.gameState.gameMode === 'dictation') {
+                    // Dictation mode: Show Chinese translation, hide English letters initially
+                    const letterSpans = word.split('').map((letter, index) => 
+                        `<span class="letter" data-index="${index}">_</span>`
+                    ).join(' ');
+                    
+                    wordObj.element.innerHTML = `
+                        <div class="text-2xl text-gray-400 font-mono tracking-wider">${letterSpans}</div>
+                        <div class="text-xl font-bold text-blue-600 dark:text-blue-400 mt-1 text-center">${translation}</div>
+                    `;
+                } else {
+                    // Normal mode: Show English word with optional translation
+                    const letterSpans = word.split('').map((letter, index) => 
+                        `<span class="letter" data-index="${index}">${letter}</span>`
+                    ).join('');
+                    
+                    const translationHtml = this.gameState.showTranslation ? 
+                        `<div class="text-sm text-gray-600 dark:text-gray-400 mt-1 text-center">(${translation})</div>` : '';
+                    
+                    wordObj.element.innerHTML = `
+                        <div class="text-2xl">${letterSpans}</div>
+                        ${translationHtml}
+                    `;
+                }
+            }
+            
+            updateFallingWords() {
+                this.gameState.fallingWords = this.gameState.fallingWords.filter(wordObj => {
+                    const element = wordObj.element;
+                    const computedStyle = window.getComputedStyle(element);
+                    const transform = computedStyle.transform;
+                    
+                    // Check if animation has reached dangerous proximity (scale > 1.2 means very close)
+                    if (transform && transform !== 'none') {
+                        const matrix = new DOMMatrix(transform);
+                        const scaleX = Math.sqrt(matrix.a * matrix.a + matrix.b * matrix.b);
+                        
+                        if (scaleX > 1.2) {
+                            element.remove();
+                            this.loseLife();
+                            return false;
+                        }
+                    }
+                    
+                    return true;
+                });
+            }
+            
+            handleInput(e) {
+                if (!this.gameState.isPlaying || this.gameState.isPaused) return;
+                
+                const input = e.target.value.toLowerCase();
+                
+                // Clear all visual states first
+                this.gameState.fallingWords.forEach(wordObj => {
+                    wordObj.isActive = false;
+                    const letters = wordObj.element.querySelectorAll('.letter');
+                    letters.forEach(letter => {
+                        letter.classList.remove('typed', 'current');
+                    });
+                });
+                
+                if (!input) {
+                    this.elements.currentTarget.textContent = 'Type the approaching words!';
+                    return;
+                }
+                
+                // Find the best matching word (most letters typed correctly)
+                let bestMatch = null;
+                let maxCorrectLetters = 0;
+                
+                this.gameState.fallingWords.forEach(wordObj => {
+                    const word = wordObj.word.toLowerCase();
+                    let correctLetters = 0;
+                    
+                    for (let i = 0; i < Math.min(input.length, word.length); i++) {
+                        if (input[i] === word[i]) {
+                            correctLetters++;
+                        } else {
+                            break;
+                        }
+                    }
+                    
+                    if (correctLetters > maxCorrectLetters) {
+                        maxCorrectLetters = correctLetters;
+                        bestMatch = wordObj;
+                    }
+                });
+                
+                if (bestMatch && maxCorrectLetters > 0) {
+                    bestMatch.isActive = true;
+                    bestMatch.typedLetters = maxCorrectLetters;
+                    
+                    const letters = bestMatch.element.querySelectorAll('.letter');
+                    const word = bestMatch.word.toLowerCase();
+                    
+                    // In dictation mode, reveal typed letters
+                    if (this.gameState.gameMode === 'dictation') {
+                        for (let i = 0; i < word.length; i++) {
+                            if (i < maxCorrectLetters) {
+                                // Show correctly typed letters
+                                letters[i].textContent = word[i];
+                                letters[i].classList.add('typed');
+                            } else if (i === maxCorrectLetters) {
+                                // Show current letter to type
+                                letters[i].textContent = '_';
+                                letters[i].classList.add('current');
+                            } else {
+                                // Keep remaining letters hidden
+                                letters[i].textContent = '_';
+                            }
+                        }
+                    } else {
+                        // Normal mode behavior
+                        for (let i = 0; i < maxCorrectLetters; i++) {
+                            letters[i].classList.add('typed');
+                        }
+                        
+                        if (maxCorrectLetters < word.length) {
+                            letters[maxCorrectLetters].classList.add('current');
+                        }
+                    }
+                    
+                    // Check if word is complete
+                    if (input === word) {
+                        this.destroyWord(bestMatch);
+                        e.target.value = '';
+                        return;
+                    }
+                    
+                    // Check if there's an incorrect letter
+                    if (input.length > maxCorrectLetters) {
+                        this.handleIncorrectLetter();
+                        return;
+                    }
+                    
+                    this.elements.currentTarget.textContent = `Typing: ${bestMatch.word} (${maxCorrectLetters}/${word.length})`;
+                    
+                    // Highlight the active word
+                    bestMatch.element.classList.add('border-yellow-500', 'bg-yellow-50', 'dark:bg-yellow-900/20');
+                } else if (input.length > 0) {
+                    this.handleIncorrectLetter();
+                }
+            }
+            
+            handleKeydown(e) {
+                // Allow space in words, but handle Enter to clear input if needed
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    this.elements.wordInput.value = '';
+                    this.elements.currentTarget.textContent = 'Input cleared!';
+                }
+            }
+            
+            destroyWord(wordObj) {
+                // Add success animation
+                wordObj.element.classList.add('pulse-success');
+                
+                setTimeout(() => {
+                    wordObj.element.remove();
+                }, 300);
+                
+                // Calculate score based on word length
+                const points = wordObj.word.length * 10 * this.gameState.level;
+                this.gameState.score += points;
+                this.gameState.wordsTyped++;
+                this.gameState.correctCharacters += wordObj.word.length;
+                this.gameState.totalCharacters += wordObj.word.length;
+                
+                // Remove from falling words array
+                this.gameState.fallingWords = this.gameState.fallingWords.filter(w => w.id !== wordObj.id);
+                
+                // Check for level up
+                if (this.gameState.wordsTyped % 10 === 0) {
+                    this.levelUp();
+                }
+                
+                this.elements.currentTarget.textContent = 'Great shot!';
+                setTimeout(() => {
+                    if (this.gameState.isPlaying) {
+                        this.elements.currentTarget.textContent = 'Keep typing!';
+                    }
+                }, 1000);
+            }
+            
+            handleIncorrectLetter() {
+                const input = this.elements.wordInput;
+                input.classList.add('shake');
+                input.style.borderColor = '#ef4444';
+                
+                setTimeout(() => {
+                    input.classList.remove('shake');
+                    input.style.borderColor = '';
+                    // Remove the last incorrect character
+                    const currentValue = input.value;
+                    input.value = currentValue.slice(0, -1);
+                }, 200);
+                
+                this.elements.currentTarget.textContent = 'Wrong letter! Try again!';
+            }
+
+            handleMiss() {
+                const input = this.elements.wordInput;
+                input.classList.add('shake');
+                input.style.borderColor = '#ef4444';
+                
+                this.gameState.totalCharacters += input.value.length;
+                
+                setTimeout(() => {
+                    input.classList.remove('shake');
+                    input.style.borderColor = '';
+                    input.value = '';
+                }, 300);
+                
+                this.elements.currentTarget.textContent = 'Miss! Try again!';
+            }
+            
+            loseLife() {
+                this.gameState.lives--;
+                
+                if (this.gameState.lives <= 0) {
+                    this.gameOver();
+                } else {
+                    // Visual feedback for losing life
+                    document.body.style.background = '#fee2e2';
+                    setTimeout(() => {
+                        document.body.style.background = '';
+                    }, 500);
+                }
+            }
+            
+            levelUp() {
+                this.gameState.level++;
+                this.gameSpeed = Math.min(3, 1 + (this.gameState.level - 1) * 0.2);
+                this.spawnRate = Math.max(800, 2000 - (this.gameState.level - 1) * 100);
+                
+                // Visual feedback
+                this.elements.currentTarget.textContent = `LEVEL UP! Level ${this.gameState.level}`;
+                setTimeout(() => {
+                    if (this.gameState.isPlaying) {
+                        this.elements.currentTarget.textContent = 'Keep typing!';
+                    }
+                }, 2000);
+            }
+            
+            checkCollisions() {
+                // Remove words that reached the bottom
+                this.gameState.fallingWords.forEach(wordObj => {
+                    const rect = wordObj.element.getBoundingClientRect();
+                    if (rect.bottom >= window.innerHeight - 100) { // 100px buffer for input area
+                        wordObj.element.remove();
+                        this.loseLife();
+                    }
+                });
+            }
+            
+            updateStats() {
+                this.elements.score.textContent = this.gameState.score.toLocaleString();
+                this.elements.lives.textContent = this.gameState.lives;
+                this.elements.level.textContent = this.gameState.level;
+                
+                // Calculate WPM
+                const timeElapsed = (Date.now() - this.gameState.startTime) / 60000; // minutes
+                const wpm = timeElapsed > 0 ? Math.round(this.gameState.wordsTyped / timeElapsed) : 0;
+                this.elements.wpm.textContent = wpm;
+                
+                // Calculate accuracy
+                const accuracy = this.gameState.totalCharacters > 0 ? 
+                    Math.round((this.gameState.correctCharacters / this.gameState.totalCharacters) * 100) : 100;
+                this.elements.accuracy.textContent = accuracy + '%';
+            }
+            
+            loadCustomWords() {
+                const fileInput = this.elements.csvFileInput;
+                if (!fileInput.files || !fileInput.files[0]) {
+                    this.showCsvStatus('Please select a CSV file first.', 'error');
+                    return;
+                }
+                
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = (e) => {
+                    try {
+                        const csvText = e.target.result;
+                        console.log('CSV Text:', csvText); // Debug
+                        const customWords = this.parseCSV(csvText);
+                        console.log('Parsed words:', customWords); // Debug
+                        
+                        if (customWords.length === 0) {
+                            this.showCsvStatus('No valid words found in CSV file. Please check format: word,translation', 'error');
+                            return;
+                        }
+                        
+                        this.customWords = customWords;
+                        this.words = customWords;
+                        
+                        this.showCsvStatus(`Successfully loaded ${customWords.length} words from CSV.`, 'success');
+                        this.elements.wordSource.textContent = 'CUSTOM';
+                        this.elements.wordSource.className = 'text-sm font-bold text-blue-500';
+                        
+                        // Show game mode selection when custom words are loaded
+                        this.elements.gameModeSection.classList.remove('hidden');
+                        
+                    } catch (error) {
+                        console.error('CSV parsing error:', error);
+                        this.showCsvStatus('Error reading CSV file: ' + error.message, 'error');
+                    }
+                };
+                
+                reader.onerror = () => {
+                    this.showCsvStatus('Error reading file.', 'error');
+                };
+                
+                // Specify UTF-8 encoding to handle Chinese characters
+                reader.readAsText(file, 'UTF-8');
+            }
+            
+            parseCSV(csvText) {
+                const lines = csvText.split('\n').filter(line => line.trim());
+                const words = [];
+                
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    // Split by comma and handle quoted values
+                    const parts = this.splitCSVLine(line);
+                    
+                    if (parts.length >= 1) {
+                        const word = parts[0].trim();
+                        const translation = parts.length > 1 ? parts[1].trim() : word;
+                        
+                        // Validate word (only letters and basic punctuation)
+                        if (word && /^[a-zA-Z\s\-']+$/.test(word)) {
+                            words.push({
+                                word: word.toLowerCase(),
+                                translation: translation || word
+                            });
+                        }
+                    }
+                }
+                
+                return words;
+            }
+            
+            splitCSVLine(line) {
+                const result = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        result.push(current);
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                
+                result.push(current);
+                return result;
+            }
+            
+            useDefaultWords() {
+                this.customWords = null;
+                this.words = [...this.defaultWords];
+                
+                this.showCsvStatus('Using default word list.', 'success');
+                this.elements.wordSource.textContent = 'DEFAULT';
+                this.elements.wordSource.className = 'text-sm font-bold text-orange-500';
+                
+                // Hide game mode selection when using default words
+                this.elements.gameModeSection.classList.add('hidden');
+                this.setGameMode('normal');
+                
+                // Clear file input
+                this.elements.csvFileInput.value = '';
+            }
+            
+            setGameMode(mode) {
+                this.gameState.gameMode = mode;
+                
+                // Update UI
+                if (mode === 'normal') {
+                    this.elements.gameMode.textContent = 'NORMAL';
+                    this.elements.gameMode.className = 'text-sm font-bold text-purple-500';
+                    this.elements.normalModeBtn.className = 'px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors text-sm';
+                    this.elements.dictationModeBtn.className = 'px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500 transition-colors text-sm';
+                    
+                    // Show translation button in normal mode
+                    this.elements.translationBtn.style.display = 'block';
+                } else if (mode === 'dictation') {
+                    this.elements.gameMode.textContent = 'DICTATION';
+                    this.elements.gameMode.className = 'text-sm font-bold text-pink-500';
+                    this.elements.dictationModeBtn.className = 'px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600 transition-colors text-sm';
+                    this.elements.normalModeBtn.className = 'px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500 transition-colors text-sm';
+                    
+                    // Hide translation button in dictation mode (always show Chinese)
+                    this.elements.translationBtn.style.display = 'none';
+                }
+                
+                // Update existing words if in game
+                if (this.gameState.isPlaying) {
+                    this.gameState.fallingWords.forEach(wordObj => {
+                        this.updateWordDisplay(wordObj);
+                    });
+                }
+            }
+            
+            showCsvStatus(message, type) {
+                const statusElement = this.elements.csvStatus;
+                statusElement.textContent = message;
+                
+                if (type === 'success') {
+                    statusElement.className = 'text-sm text-green-600 dark:text-green-400';
+                } else if (type === 'error') {
+                    statusElement.className = 'text-sm text-red-600 dark:text-red-400';
+                } else {
+                    statusElement.className = 'text-sm text-gray-600 dark:text-gray-400';
+                }
+                
+                // Clear status after 3 seconds
+                setTimeout(() => {
+                    statusElement.textContent = '';
+                }, 3000);
+            }
+
+            gameOver() {
+                this.gameState.isPlaying = false;
+                
+                // Clear all falling words
+                this.gameState.fallingWords.forEach(wordObj => wordObj.element.remove());
+                this.gameState.fallingWords = [];
+                
+                // Show final stats
+                const timeElapsed = (Date.now() - this.gameState.startTime) / 60000;
+                const finalWpm = timeElapsed > 0 ? Math.round(this.gameState.wordsTyped / timeElapsed) : 0;
+                const finalAccuracy = this.gameState.totalCharacters > 0 ? 
+                    Math.round((this.gameState.correctCharacters / this.gameState.totalCharacters) * 100) : 100;
+                
+                this.elements.finalScore.textContent = this.gameState.score.toLocaleString();
+                this.elements.finalWpm.textContent = finalWpm;
+                this.elements.finalAccuracy.textContent = finalAccuracy + '%';
+                this.elements.finalLevel.textContent = this.gameState.level;
+                
+                this.elements.gameOverScreen.classList.remove('hidden');
+            }
+        }
+        
+        // Start the game when page loads
+        window.addEventListener('load', () => {
+            new TypingGame();
+        });
+    </script>
+</body>
+</html>
