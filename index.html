@@ -290,23 +290,24 @@
 
         .zombie-image {
             display: block;
-            width: 100px;
-            height: 175px;
+            width: 10vw;
+            height: 17.5vw;
             object-fit: contain;
         }
 
         .zombie-text-overlay {
             position: absolute;
-            top: 10%;
+            top: 60%;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.95);
-            border: 2px solid #333;
-            border-radius: 8px;
-            padding: 8px 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            min-width: 120px;
+            border: 0.2vw solid #333;
+            border-radius: 0.8vw;
+            padding: 0.8vw 1.2vw;
+            box-shadow: 0 0.2vw 0.8vw rgba(0,0,0,0.3);
+            min-width: 12vw;
             text-align: center;
+            font-size: 1.2vw;
         }
 
         .dark .zombie-text-overlay {
@@ -831,14 +832,19 @@
                 const angle = Math.random() * 2 * Math.PI;
                 const radius = Math.min(this.elements.gameArea.clientWidth, this.elements.gameArea.clientHeight) * 0.3;
 
-                const x = centerX + Math.cos(angle) * radius - 50; // -50 for half zombie width
-                const y = centerY + Math.sin(angle) * radius - 87.5; // -87.5 for half zombie height
+                // Calculate zombie size based on viewport (10vw)
+                const zombieWidth = window.innerWidth * 0.1;
+                const zombieHeight = window.innerWidth * 0.175;
 
-                wordElement.style.left = Math.max(0, Math.min(x, this.elements.gameArea.clientWidth - 100)) + 'px';
-                wordElement.style.top = Math.max(80, Math.min(y, this.elements.gameArea.clientHeight - 220)) + 'px';
+                const x = centerX + Math.cos(angle) * radius - zombieWidth / 2;
+                const y = centerY + Math.sin(angle) * radius - zombieHeight / 2;
+
+                wordElement.style.left = Math.max(0, Math.min(x, this.elements.gameArea.clientWidth - zombieWidth)) + 'px';
+                wordElement.style.top = Math.max(80, Math.min(y, this.elements.gameArea.clientHeight - zombieHeight - 100)) + 'px';
 
                 // Animation duration based on level and zombie type
-                let baseDuration = Math.max(4, 10 - this.gameState.level * 0.8);
+                // Slowed down by 30% from original speed
+                let baseDuration = Math.max(5.2, (10 - this.gameState.level * 0.8) * 1.3);
 
                 // Zombie3 is faster
                 if (zombieType === 'zombie3') {
@@ -874,8 +880,8 @@
                         <div class="zombie-container">
                             <img src="${zombieImage}" alt="Zombie" class="zombie-image">
                             <div class="zombie-text-overlay">
-                                <div class="text-base text-gray-400 font-mono tracking-wider">${letterSpans}</div>
-                                <div class="text-sm font-bold text-blue-600 dark:text-blue-400 mt-1">${translation}</div>
+                                <div class="text-gray-400 font-mono tracking-wider" style="font-size: 1vw;">${letterSpans}</div>
+                                <div class="font-bold text-blue-600 dark:text-blue-400" style="margin-top: 0.4vw; font-size: 1vw;">${translation}</div>
                             </div>
                         </div>
                     `;
@@ -886,13 +892,13 @@
                     ).join('');
 
                     const translationHtml = this.gameState.showTranslation ?
-                        `<div class="text-xs text-gray-600 dark:text-gray-400 mt-1">(${translation})</div>` : '';
+                        `<div class="text-gray-600 dark:text-gray-400" style="margin-top: 0.3vw; font-size: 0.9vw;">(${translation})</div>` : '';
 
                     wordObj.element.innerHTML = `
                         <div class="zombie-container">
                             <img src="${zombieImage}" alt="Zombie" class="zombie-image">
                             <div class="zombie-text-overlay">
-                                <div class="text-base font-bold">${letterSpans}</div>
+                                <div class="font-bold" style="font-size: 1.1vw;">${letterSpans}</div>
                                 ${translationHtml}
                             </div>
                         </div>
