@@ -181,27 +181,28 @@
             0% {
                 transform: translateZ(0px) scale(1) rotate(0deg);
                 filter: brightness(1) drop-shadow(2px 2px 8px rgba(0,0,0,0.8));
+                animation-play-state: running;
             }
-            40% {
-                transform: translateZ(-80px) scale(0.85) rotate(-2deg);
+            50% {
+                transform: translateZ(-120px) scale(0.8) rotate(-3deg);
                 filter: brightness(1.8) drop-shadow(0 0 15px #ff4444);
-            }
-            70% {
-                transform: translateZ(-40px) scale(0.92) rotate(-1deg);
-                filter: brightness(1.4) drop-shadow(2px 2px 8px rgba(0,0,0,0.8));
+                animation-play-state: running;
             }
             100% {
-                transform: translateZ(0px) scale(1) rotate(0deg);
+                transform: translateZ(-120px) scale(0.8) rotate(0deg);
                 filter: brightness(1) drop-shadow(2px 2px 8px rgba(0,0,0,0.8));
+                animation-play-state: paused;
             }
         }
 
         .hit-stun {
             animation: hitStun 0.3s ease-out !important;
+            animation-fill-mode: forwards !important;
         }
 
         .hit-knockback {
-            animation: hitKnockback 0.5s ease-out !important;
+            animation: hitKnockback 0.6s ease-out !important;
+            animation-fill-mode: forwards !important;
         }
 
         @keyframes zombieDeath {
@@ -558,7 +559,7 @@
                     { word: 'machine', translation: '機器' },
                     { word: 'science', translation: '科學' },
                     { word: 'technology', translation: '技術' },
-                    { word: 'advanced', translation: '���進' },
+                    { word: 'advanced', translation: '先進' },
                     { word: 'modern', translation: '現代' },
 
                     // Hard words (9+ letters)
@@ -1102,20 +1103,28 @@
                         }
                     }, 300);
                 } else {
+                    // Knockback: pause the zombie's approach animation
+                    const currentAnimation = wordObj.element.style.animation;
+                    wordObj.element.style.animationPlayState = 'paused';
+
                     wordObj.element.classList.add('hit-knockback');
-                    // Remove the class after animation completes
+
+                    // After knockback animation completes, resume approach from new position
                     setTimeout(() => {
                         if (wordObj.element.parentNode) {
+                            // Remove knockback class to allow approach animation to continue
                             wordObj.element.classList.remove('hit-knockback');
+                            // Resume the approach animation
+                            wordObj.element.style.animationPlayState = 'running';
                         }
-                    }, 500);
+                    }, 600);
                 }
 
                 // Mark as hit to prevent animation stacking
                 wordObj.isHit = true;
                 setTimeout(() => {
                     wordObj.isHit = false;
-                }, 600);
+                }, 700);
             }
 
             destroyWord(wordObj) {
