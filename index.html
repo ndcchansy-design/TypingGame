@@ -164,34 +164,34 @@
 
         @keyframes hitStun {
             0% {
-                transform: scale(1) translateX(0px);
+                transform: translateZ(0px) scale(1);
                 filter: brightness(1) hue-rotate(0deg) drop-shadow(2px 2px 8px rgba(0,0,0,0.8));
             }
             50% {
-                transform: scale(0.95) translateX(-5px);
-                filter: brightness(1.5) hue-rotate(0deg) drop-shadow(0 0 10px #ff0000);
+                transform: translateZ(0px) scale(1);
+                filter: brightness(1.8) hue-rotate(0deg) drop-shadow(0 0 15px #ffff00);
             }
             100% {
-                transform: scale(1) translateX(0px);
+                transform: translateZ(0px) scale(1);
                 filter: brightness(1) hue-rotate(0deg) drop-shadow(2px 2px 8px rgba(0,0,0,0.8));
             }
         }
 
         @keyframes hitKnockback {
             0% {
-                transform: scale(1) translateX(0px) rotate(0deg);
+                transform: translateZ(0px) scale(1) rotate(0deg);
                 filter: brightness(1) drop-shadow(2px 2px 8px rgba(0,0,0,0.8));
             }
-            30% {
-                transform: scale(0.9) translateX(-15px) rotate(-3deg);
+            40% {
+                transform: translateZ(-80px) scale(0.85) rotate(-2deg);
                 filter: brightness(1.8) drop-shadow(0 0 15px #ff4444);
             }
-            60% {
-                transform: scale(0.95) translateX(-10px) rotate(-1deg);
-                filter: brightness(1.3) drop-shadow(2px 2px 8px rgba(0,0,0,0.8));
+            70% {
+                transform: translateZ(-40px) scale(0.92) rotate(-1deg);
+                filter: brightness(1.4) drop-shadow(2px 2px 8px rgba(0,0,0,0.8));
             }
             100% {
-                transform: scale(1) translateX(0px) rotate(0deg);
+                transform: translateZ(0px) scale(1) rotate(0deg);
                 filter: brightness(1) drop-shadow(2px 2px 8px rgba(0,0,0,0.8));
             }
         }
@@ -244,7 +244,6 @@
         .letter.typed {
             background: #10b981;
             color: white;
-            transform: scale(1.1);
             border-radius: 4px;
             padding: 0 2px;
         }
@@ -252,7 +251,6 @@
         .letter.current {
             background: #f59e0b;
             color: white;
-            transform: scale(1.2);
             border-radius: 4px;
             padding: 0 2px;
             animation: pulse 1s infinite;
@@ -560,7 +558,7 @@
                     { word: 'machine', translation: '機器' },
                     { word: 'science', translation: '科學' },
                     { word: 'technology', translation: '技術' },
-                    { word: 'advanced', translation: '先進' },
+                    { word: 'advanced', translation: '���進' },
                     { word: 'modern', translation: '現代' },
 
                     // Hard words (9+ letters)
