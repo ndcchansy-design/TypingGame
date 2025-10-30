@@ -1462,14 +1462,8 @@
             }
 
             checkCollisions() {
-                // Remove words that reached the bottom
-                this.gameState.fallingWords.forEach(wordObj => {
-                    const rect = wordObj.element.getBoundingClientRect();
-                    if (rect.bottom >= window.innerHeight - 100) { // 100px buffer for input area
-                        wordObj.element.remove();
-                        this.loseLife();
-                    }
-                });
+                // This function is no longer needed as zombies now stop and attack
+                // Attack logic is handled in updateFallingWords()
             }
 
             updateStats() {
