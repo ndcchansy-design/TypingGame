@@ -18,59 +18,138 @@
     </script>
     <style>
         @keyframes zombieApproach {
-            0% { 
+            0% {
                 transform: translateZ(-1000px) scale(0.1) translateX(0px) rotate(0deg);
                 opacity: 0.3;
             }
-            10% { 
+            10% {
                 transform: translateZ(-800px) scale(0.2) translateX(-10px) rotate(-2deg);
                 opacity: 0.4;
             }
-            20% { 
+            20% {
                 transform: translateZ(-600px) scale(0.35) translateX(8px) rotate(1deg);
                 opacity: 0.5;
             }
-            30% { 
+            30% {
                 transform: translateZ(-400px) scale(0.5) translateX(-15px) rotate(-1.5deg);
                 opacity: 0.6;
             }
-            40% { 
+            40% {
                 transform: translateZ(-200px) scale(0.7) translateX(12px) rotate(2deg);
                 opacity: 0.75;
             }
-            50% { 
+            50% {
                 transform: translateZ(-100px) scale(0.85) translateX(-8px) rotate(-0.5deg);
                 opacity: 0.85;
             }
-            60% { 
+            60% {
                 transform: translateZ(-50px) scale(1.0) translateX(5px) rotate(1deg);
                 opacity: 0.9;
             }
-            70% { 
+            70% {
                 transform: translateZ(-25px) scale(1.1) translateX(-7px) rotate(-1deg);
                 opacity: 0.95;
             }
-            80% { 
+            80% {
                 transform: translateZ(-10px) scale(1.25) translateX(3px) rotate(0.5deg);
                 opacity: 0.98;
             }
-            90% { 
+            90% {
                 transform: translateZ(-5px) scale(1.35) translateX(-2px) rotate(-0.5deg);
                 opacity: 1;
             }
-            100% { 
+            100% {
                 transform: translateZ(0) scale(1.5) translateX(0px) rotate(0deg);
                 opacity: 1;
             }
         }
-        
+
+        /* Zombie 1 - 直线前进，轻微摇摆 */
+        @keyframes zombie1Approach {
+            0% {
+                transform: translateZ(-1000px) scale(0.1) translateX(0px) rotate(0deg);
+                opacity: 0.3;
+            }
+            100% {
+                transform: translateZ(0) scale(1.5) translateX(0px) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        /* Zombie 2 - 左右摇摆前进 */
+        @keyframes zombie2Approach {
+            0% {
+                transform: translateZ(-1000px) scale(0.1) translateX(-30px) rotate(-5deg);
+                opacity: 0.3;
+            }
+            25% {
+                transform: translateZ(-750px) scale(0.4) translateX(30px) rotate(5deg);
+                opacity: 0.5;
+            }
+            50% {
+                transform: translateZ(-500px) scale(0.7) translateX(-30px) rotate(-5deg);
+                opacity: 0.7;
+            }
+            75% {
+                transform: translateZ(-250px) scale(1.0) translateX(30px) rotate(5deg);
+                opacity: 0.9;
+            }
+            100% {
+                transform: translateZ(0) scale(1.5) translateX(0px) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        /* Zombie 3 - 快速冲刺，抖动前进 */
+        @keyframes zombie3Approach {
+            0% {
+                transform: translateZ(-1000px) scale(0.1) translateX(0px) rotate(0deg);
+                opacity: 0.3;
+            }
+            10% {
+                transform: translateZ(-700px) scale(0.3) translateX(-5px) rotate(-2deg);
+                opacity: 0.5;
+            }
+            20% {
+                transform: translateZ(-500px) scale(0.5) translateX(5px) rotate(2deg);
+                opacity: 0.65;
+            }
+            30% {
+                transform: translateZ(-350px) scale(0.7) translateX(-5px) rotate(-2deg);
+                opacity: 0.8;
+            }
+            50% {
+                transform: translateZ(-150px) scale(1.0) translateX(5px) rotate(2deg);
+                opacity: 0.9;
+            }
+            70% {
+                transform: translateZ(-50px) scale(1.2) translateX(-3px) rotate(-1deg);
+                opacity: 0.95;
+            }
+            100% {
+                transform: translateZ(0) scale(1.5) translateX(0px) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
         .zombie-word {
-            animation: zombieApproach linear;
             perspective: 1000px;
             transform-style: preserve-3d;
-            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5));
+            filter: drop-shadow(2px 2px 8px rgba(0,0,0,0.8));
         }
-        
+
+        .zombie-word.zombie1 {
+            animation: zombie1Approach linear;
+        }
+
+        .zombie-word.zombie2 {
+            animation: zombie2Approach linear;
+        }
+
+        .zombie-word.zombie3 {
+            animation: zombie3Approach linear;
+        }
+
         @keyframes zombieStagger {
             0% { transform: translateX(0px) rotate(0deg); }
             25% { transform: translateX(-3px) rotate(-1deg); }
@@ -78,90 +157,90 @@
             75% { transform: translateX(-1px) rotate(-0.5deg); }
             100% { transform: translateX(0px) rotate(0deg); }
         }
-        
+
         .zombie-idle {
             animation: zombieStagger 2s ease-in-out infinite;
         }
-        
+
         @keyframes hitStun {
-            0% { 
+            0% {
                 transform: scale(1) translateX(0px);
-                filter: brightness(1) hue-rotate(0deg);
+                filter: brightness(1) hue-rotate(0deg) drop-shadow(2px 2px 8px rgba(0,0,0,0.8));
             }
-            50% { 
+            50% {
                 transform: scale(0.95) translateX(-5px);
                 filter: brightness(1.5) hue-rotate(0deg) drop-shadow(0 0 10px #ff0000);
             }
-            100% { 
+            100% {
                 transform: scale(1) translateX(0px);
-                filter: brightness(1) hue-rotate(0deg);
+                filter: brightness(1) hue-rotate(0deg) drop-shadow(2px 2px 8px rgba(0,0,0,0.8));
             }
         }
-        
+
         @keyframes hitKnockback {
-            0% { 
+            0% {
                 transform: scale(1) translateX(0px) rotate(0deg);
-                filter: brightness(1);
+                filter: brightness(1) drop-shadow(2px 2px 8px rgba(0,0,0,0.8));
             }
-            30% { 
+            30% {
                 transform: scale(0.9) translateX(-15px) rotate(-3deg);
                 filter: brightness(1.8) drop-shadow(0 0 15px #ff4444);
             }
-            60% { 
+            60% {
                 transform: scale(0.95) translateX(-10px) rotate(-1deg);
-                filter: brightness(1.3);
+                filter: brightness(1.3) drop-shadow(2px 2px 8px rgba(0,0,0,0.8));
             }
-            100% { 
+            100% {
                 transform: scale(1) translateX(0px) rotate(0deg);
-                filter: brightness(1);
+                filter: brightness(1) drop-shadow(2px 2px 8px rgba(0,0,0,0.8));
             }
         }
-        
+
         .hit-stun {
             animation: hitStun 0.3s ease-out !important;
         }
-        
+
         .hit-knockback {
             animation: hitKnockback 0.5s ease-out !important;
         }
-        
+
         @keyframes zombieDeath {
-            0% { 
+            0% {
                 transform: scale(1) rotate(0deg);
-                filter: brightness(1);
+                filter: brightness(1) drop-shadow(2px 2px 8px rgba(0,0,0,0.8));
                 opacity: 1;
             }
-            25% { 
+            25% {
                 transform: scale(1.1) rotate(-5deg);
                 filter: brightness(2) hue-rotate(0deg) drop-shadow(0 0 20px #ff0000);
                 opacity: 1;
             }
-            50% { 
+            50% {
                 transform: scale(0.9) rotate(5deg);
-                filter: brightness(1.5) hue-rotate(30deg);
+                filter: brightness(1.5) hue-rotate(30deg) drop-shadow(0 0 15px #ff0000);
                 opacity: 0.8;
             }
-            75% { 
+            75% {
                 transform: scale(0.7) rotate(-10deg);
-                filter: brightness(0.5) hue-rotate(60deg);
+                filter: brightness(0.5) hue-rotate(60deg) drop-shadow(0 0 10px #ff0000);
                 opacity: 0.4;
             }
-            100% { 
+            100% {
                 transform: scale(0.3) rotate(15deg);
                 filter: brightness(0) grayscale(1);
                 opacity: 0;
             }
         }
-        
+
         .zombie-death {
             animation: zombieDeath 0.8s ease-out forwards !important;
         }
-        
+
         .letter {
             display: inline-block;
             transition: all 0.2s ease;
         }
-        
+
         .letter.typed {
             background: #10b981;
             color: white;
@@ -169,7 +248,7 @@
             border-radius: 4px;
             padding: 0 2px;
         }
-        
+
         .letter.current {
             background: #f59e0b;
             color: white;
@@ -178,30 +257,68 @@
             padding: 0 2px;
             animation: pulse 1s infinite;
         }
-        
+
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
         }
-        
+
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-5px); }
             75% { transform: translateX(5px); }
         }
-        
+
         .shake {
             animation: shake 0.3s ease-in-out;
         }
-        
+
         @keyframes pulse-success {
             0% { transform: scale(1); }
             50% { transform: scale(1.1); }
             100% { transform: scale(1); }
         }
-        
+
         .pulse-success {
             animation: pulse-success 0.3s ease-in-out;
+        }
+
+        .zombie-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .zombie-image {
+            display: block;
+            width: 100px;
+            height: 175px;
+            object-fit: contain;
+        }
+
+        .zombie-text-overlay {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 8px 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .dark .zombie-text-overlay {
+            background: rgba(31, 41, 55, 0.95);
+            border-color: #9ca3af;
+        }
+
+        #gameArea {
+            background-image: url('images/IMG_2669.PNG');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
     </style>
 </head>
@@ -267,16 +384,16 @@
         </div>
 
         <!-- Game Area -->
-        <div id="gameArea" class="h-full relative bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
-            <!-- Falling words will be added here -->
+        <div id="gameArea" class="h-full relative">
+            <!-- Falling zombie words will be added here -->
         </div>
 
         <!-- Input Area -->
         <div class="absolute bottom-0 left-0 right-0 z-10 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm p-4">
             <div class="max-w-2xl mx-auto">
-                <input 
-                    type="text" 
-                    id="wordInput" 
+                <input
+                    type="text"
+                    id="wordInput"
                     class="w-full text-2xl p-4 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary focus:outline-none transition-colors text-base"
                     placeholder="Type the words here..."
                     autocomplete="off"
@@ -319,18 +436,18 @@
             <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-2xl text-center max-w-lg mx-4">
                 <h1 class="text-4xl font-bold mb-4 text-primary">TYPING DEFENSE</h1>
                 <p class="text-gray-600 dark:text-gray-400 mb-6">
-                    Type the approaching words to destroy them before they get too close!<br>
-                    Words zoom toward you from the distance. Lose all 3 lives and it's game over.
+                    Type the approaching words to destroy the zombies before they get too close!<br>
+                    Three types of zombies with different movement patterns. Lose all 3 lives and it's game over.
                 </p>
                 <div class="text-left mb-6 text-sm space-y-1">
                     <p><strong>Controls:</strong></p>
                     <p>• Type words letter by letter</p>
                     <p>• Green = typed correctly, Yellow = current letter</p>
-                    <p>• Higher levels = faster approach speed</p>
+                    <p>• Higher levels = faster zombies</p>
                     <p>• Longer words = more points</p>
                     <p>• Press Escape to clear input</p>
                 </div>
-                
+
                 <!-- CSV Upload Section -->
                 <div class="mb-6 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
                     <h3 class="text-lg font-bold mb-3">Custom Word List</h3>
@@ -339,10 +456,10 @@
                         Format: <code class="bg-gray-200 dark:bg-gray-600 px-1 rounded">word,translation</code>
                     </div>
                     <div class="flex flex-col space-y-3">
-                        <input 
-                            type="file" 
-                            id="csvFileInput" 
-                            accept=".csv,.txt" 
+                        <input
+                            type="file"
+                            id="csvFileInput"
+                            accept=".csv,.txt"
                             class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/80"
                         >
                         <div class="flex space-x-2">
@@ -356,7 +473,7 @@
                         <div id="csvStatus" class="text-sm"></div>
                     </div>
                 </div>
-                
+
                 <!-- Game Mode Selection -->
                 <div id="gameModeSection" class="mb-6 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg hidden">
                     <h3 class="text-lg font-bold mb-3">Game Mode</h3>
@@ -375,7 +492,7 @@
                         Normal: Type English words | Dictation: See Chinese, type English
                     </div>
                 </div>
-                
+
                 <button id="startBtn" class="px-8 py-4 bg-primary text-white text-xl rounded-lg hover:bg-primary/80 transition-colors">
                     START GAME
                 </button>
@@ -418,7 +535,7 @@
                     { word: 'music', translation: '音樂' },
                     { word: 'dance', translation: '跳舞' },
                     { word: 'write', translation: '寫' },
-                    
+
                     // Medium words (6-8 letters)
                     { word: 'computer', translation: '電腦' },
                     { word: 'keyboard', translation: '鍵盤' },
@@ -444,7 +561,7 @@
                     { word: 'technology', translation: '技術' },
                     { word: 'advanced', translation: '先進' },
                     { word: 'modern', translation: '現代' },
-                    
+
                     // Hard words (9+ letters)
                     { word: 'programming', translation: '程式設計' },
                     { word: 'development', translation: '開發' },
@@ -464,7 +581,14 @@
                     { word: 'documentation', translation: '文件' },
                     { word: 'specification', translation: '規格' }
                 ];
-                
+
+                this.zombieTypes = ['zombie1', 'zombie2', 'zombie3'];
+                this.zombieImages = {
+                    zombie1: 'images/Zombie1.png',
+                    zombie2: 'images/Zombie2.png',
+                    zombie3: 'images/Zombie3.png'
+                };
+
                 this.gameState = {
                     isPlaying: false,
                     isPaused: false,
@@ -480,24 +604,24 @@
                     showTranslation: true,
                     gameMode: 'normal' // 'normal' or 'dictation'
                 };
-                
+
                 this.defaultWords = [...this.words]; // Store original words
                 this.customWords = null; // Store custom uploaded words
-                
+
                 this.gameSpeed = 1;
                 this.spawnRate = 2000; // milliseconds
                 this.lastSpawnTime = 0;
-                
+
                 this.initializeElements();
                 this.attachEventListeners();
             }
-            
+
             initializeElements() {
                 this.elements = {
                     gameArea: document.getElementById('gameArea'),
                     wordInput: document.getElementById('wordInput'),
                     currentTarget: document.getElementById('currentTarget'),
-                    
+
                     // Stats
                     score: document.getElementById('score'),
                     wpm: document.getElementById('wpm'),
@@ -505,12 +629,12 @@
                     level: document.getElementById('level'),
                     lives: document.getElementById('lives'),
                     wordSource: document.getElementById('wordSource'),
-                    
+
                     // Screens
                     startScreen: document.getElementById('startScreen'),
                     gameOverScreen: document.getElementById('gameOverScreen'),
                     pauseScreen: document.getElementById('pauseScreen'),
-                    
+
                     // Buttons
                     startBtn: document.getElementById('startBtn'),
                     restartBtn: document.getElementById('restartBtn'),
@@ -519,17 +643,17 @@
                     translationBtn: document.getElementById('translationBtn'),
                     loadCsvBtn: document.getElementById('loadCsvBtn'),
                     clearCsvBtn: document.getElementById('clearCsvBtn'),
-                    
+
                     // CSV elements
                     csvFileInput: document.getElementById('csvFileInput'),
                     csvStatus: document.getElementById('csvStatus'),
-                    
+
                     // Game mode elements
                     gameModeSection: document.getElementById('gameModeSection'),
                     normalModeBtn: document.getElementById('normalModeBtn'),
                     dictationModeBtn: document.getElementById('dictationModeBtn'),
                     gameMode: document.getElementById('gameMode'),
-                    
+
                     // Final stats
                     finalScore: document.getElementById('finalScore'),
                     finalWpm: document.getElementById('finalWpm'),
@@ -537,7 +661,7 @@
                     finalLevel: document.getElementById('finalLevel')
                 };
             }
-            
+
             attachEventListeners() {
                 this.elements.startBtn.addEventListener('click', () => this.startGame());
                 this.elements.restartBtn.addEventListener('click', () => this.restartGame());
@@ -548,10 +672,10 @@
                 this.elements.clearCsvBtn.addEventListener('click', () => this.useDefaultWords());
                 this.elements.normalModeBtn.addEventListener('click', () => this.setGameMode('normal'));
                 this.elements.dictationModeBtn.addEventListener('click', () => this.setGameMode('dictation'));
-                
+
                 this.elements.wordInput.addEventListener('input', (e) => this.handleInput(e));
                 this.elements.wordInput.addEventListener('keydown', (e) => this.handleKeydown(e));
-                
+
                 // Focus input when clicking on game area
                 this.elements.gameArea.addEventListener('click', () => {
                     if (this.gameState.isPlaying && !this.gameState.isPaused) {
@@ -559,12 +683,12 @@
                     }
                 });
             }
-            
+
             startGame() {
                 // Preserve translation setting and game mode
                 const currentTranslationSetting = this.gameState.showTranslation;
                 const currentGameMode = this.gameState.gameMode;
-                
+
                 this.gameState = {
                     isPlaying: true,
                     isPaused: false,
@@ -580,31 +704,31 @@
                     showTranslation: currentTranslationSetting,
                     gameMode: currentGameMode
                 };
-                
+
                 this.gameSpeed = 1;
                 this.spawnRate = 2000;
                 this.lastSpawnTime = 0;
-                
+
                 this.elements.startScreen.classList.add('hidden');
                 this.elements.gameOverScreen.classList.add('hidden');
                 this.elements.wordInput.focus();
                 this.elements.wordInput.value = '';
                 this.elements.currentTarget.textContent = 'Type the falling words!';
-                
+
                 // Clear any existing words
                 this.elements.gameArea.innerHTML = '';
-                
+
                 this.updateStats();
                 this.gameLoop();
             }
-            
+
             restartGame() {
                 this.startGame();
             }
-            
+
             togglePause() {
                 this.gameState.isPaused = !this.gameState.isPaused;
-                
+
                 if (this.gameState.isPaused) {
                     this.elements.pauseScreen.classList.remove('hidden');
                     this.elements.pauseBtn.textContent = 'RESUME';
@@ -614,20 +738,20 @@
                     this.elements.wordInput.focus();
                 }
             }
-            
+
             gameLoop() {
                 if (!this.gameState.isPlaying) return;
-                
+
                 if (!this.gameState.isPaused) {
                     this.updateFallingWords();
                     this.spawnWord();
                     this.checkCollisions();
                     this.updateStats();
                 }
-                
+
                 requestAnimationFrame(() => this.gameLoop());
             }
-            
+
             spawnWord() {
                 const now = Date.now();
                 if (now - this.lastSpawnTime > this.spawnRate / this.gameSpeed) {
@@ -636,16 +760,16 @@
                     this.lastSpawnTime = now;
                 }
             }
-            
+
             toggleTranslation() {
                 this.gameState.showTranslation = !this.gameState.showTranslation;
-                
+
                 // Update button text
                 this.elements.translationBtn.textContent = this.gameState.showTranslation ? '中文 ON' : '中文 OFF';
-                this.elements.translationBtn.className = this.gameState.showTranslation ? 
+                this.elements.translationBtn.className = this.gameState.showTranslation ?
                     'px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors text-sm' :
                     'px-3 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors text-sm';
-                
+
                 // Update existing words
                 this.gameState.fallingWords.forEach(wordObj => {
                     this.updateWordDisplay(wordObj);
@@ -655,7 +779,7 @@
             getRandomWord() {
                 const level = this.gameState.level;
                 let availableWords;
-                
+
                 // For custom words, use all words regardless of level to ensure all uploaded words appear
                 if (this.customWords && this.customWords.length > 0) {
                     availableWords = this.words;
@@ -672,113 +796,137 @@
                         availableWords = this.words;
                     }
                 }
-                
+
                 return availableWords[Math.floor(Math.random() * availableWords.length)];
             }
-            
+
             createFallingWord(wordData) {
                 const wordElement = document.createElement('div');
-                wordElement.className = 'absolute font-bold px-4 py-2 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-lg zombie-word';
+                const zombieType = this.zombieTypes[Math.floor(Math.random() * this.zombieTypes.length)];
+
+                wordElement.className = `absolute zombie-word ${zombieType}`;
                 wordElement.id = `word-${this.gameState.wordIdCounter++}`;
-                
+
                 this.elements.gameArea.appendChild(wordElement);
-                
+
                 const wordObj = {
                     element: wordElement,
                     word: wordData.word,
                     translation: wordData.translation,
                     id: wordElement.id,
+                    zombieType: zombieType,
                     typedLetters: 0,
                     isActive: false,
                     isHit: false
                 };
-                
+
                 this.gameState.fallingWords.push(wordObj);
-                
-                // Set up display
+
+                // Set up display with zombie image and text overlay
                 this.updateWordDisplay(wordObj);
-                
+
                 // Random position in a circle around center
                 const centerX = this.elements.gameArea.clientWidth / 2;
                 const centerY = this.elements.gameArea.clientHeight / 2;
                 const angle = Math.random() * 2 * Math.PI;
                 const radius = Math.min(this.elements.gameArea.clientWidth, this.elements.gameArea.clientHeight) * 0.3;
-                
-                const x = centerX + Math.cos(angle) * radius - 100; // -100 for word width adjustment
-                const y = centerY + Math.sin(angle) * radius - 50; // -50 for word height adjustment (increased for translation)
-                
-                wordElement.style.left = Math.max(0, Math.min(x, this.elements.gameArea.clientWidth - 200)) + 'px';
-                wordElement.style.top = Math.max(0, Math.min(y, this.elements.gameArea.clientHeight - 200)) + 'px';
-                
-                // Animation duration based on level (faster at higher levels)
-                const duration = Math.max(4, 10 - this.gameState.level * 0.8);
-                wordElement.style.animationDuration = duration + 's';
-                
+
+                const x = centerX + Math.cos(angle) * radius - 50; // -50 for half zombie width
+                const y = centerY + Math.sin(angle) * radius - 87.5; // -87.5 for half zombie height
+
+                wordElement.style.left = Math.max(0, Math.min(x, this.elements.gameArea.clientWidth - 100)) + 'px';
+                wordElement.style.top = Math.max(80, Math.min(y, this.elements.gameArea.clientHeight - 220)) + 'px';
+
+                // Animation duration based on level and zombie type
+                let baseDuration = Math.max(4, 10 - this.gameState.level * 0.8);
+
+                // Zombie3 is faster
+                if (zombieType === 'zombie3') {
+                    baseDuration *= 0.7;
+                }
+                // Zombie2 is medium speed
+                else if (zombieType === 'zombie2') {
+                    baseDuration *= 0.85;
+                }
+
+                wordElement.style.animationDuration = baseDuration + 's';
+
                 // Add zombie idle animation when approaching is complete
                 setTimeout(() => {
                     if (wordElement.parentNode) {
                         wordElement.classList.add('zombie-idle');
                     }
-                }, duration * 1000);
+                }, baseDuration * 1000);
             }
-            
+
             updateWordDisplay(wordObj) {
                 const word = wordObj.word;
                 const translation = wordObj.translation;
-                
+                const zombieImage = this.zombieImages[wordObj.zombieType];
+
                 if (this.gameState.gameMode === 'dictation') {
                     // Dictation mode: Show Chinese translation, hide English letters initially
-                    const letterSpans = word.split('').map((letter, index) => 
+                    const letterSpans = word.split('').map((letter, index) =>
                         `<span class="letter" data-index="${index}">_</span>`
                     ).join(' ');
-                    
+
                     wordObj.element.innerHTML = `
-                        <div class="text-2xl text-gray-400 font-mono tracking-wider">${letterSpans}</div>
-                        <div class="text-xl font-bold text-blue-600 dark:text-blue-400 mt-1 text-center">${translation}</div>
+                        <div class="zombie-container">
+                            <img src="${zombieImage}" alt="Zombie" class="zombie-image">
+                            <div class="zombie-text-overlay">
+                                <div class="text-base text-gray-400 font-mono tracking-wider">${letterSpans}</div>
+                                <div class="text-sm font-bold text-blue-600 dark:text-blue-400 mt-1">${translation}</div>
+                            </div>
+                        </div>
                     `;
                 } else {
                     // Normal mode: Show English word with optional translation
-                    const letterSpans = word.split('').map((letter, index) => 
+                    const letterSpans = word.split('').map((letter, index) =>
                         `<span class="letter" data-index="${index}">${letter}</span>`
                     ).join('');
-                    
-                    const translationHtml = this.gameState.showTranslation ? 
-                        `<div class="text-sm text-gray-600 dark:text-gray-400 mt-1 text-center">(${translation})</div>` : '';
-                    
+
+                    const translationHtml = this.gameState.showTranslation ?
+                        `<div class="text-xs text-gray-600 dark:text-gray-400 mt-1">(${translation})</div>` : '';
+
                     wordObj.element.innerHTML = `
-                        <div class="text-2xl">${letterSpans}</div>
-                        ${translationHtml}
+                        <div class="zombie-container">
+                            <img src="${zombieImage}" alt="Zombie" class="zombie-image">
+                            <div class="zombie-text-overlay">
+                                <div class="text-base font-bold">${letterSpans}</div>
+                                ${translationHtml}
+                            </div>
+                        </div>
                     `;
                 }
             }
-            
+
             updateFallingWords() {
                 this.gameState.fallingWords = this.gameState.fallingWords.filter(wordObj => {
                     const element = wordObj.element;
                     const computedStyle = window.getComputedStyle(element);
                     const transform = computedStyle.transform;
-                    
+
                     // Check if animation has reached dangerous proximity (scale > 1.2 means very close)
                     if (transform && transform !== 'none') {
                         const matrix = new DOMMatrix(transform);
                         const scaleX = Math.sqrt(matrix.a * matrix.a + matrix.b * matrix.b);
-                        
+
                         if (scaleX > 1.2) {
                             element.remove();
                             this.loseLife();
                             return false;
                         }
                     }
-                    
+
                     return true;
                 });
             }
-            
+
             handleInput(e) {
                 if (!this.gameState.isPlaying || this.gameState.isPaused) return;
-                
+
                 const input = e.target.value.toLowerCase();
-                
+
                 // Clear all visual states first
                 this.gameState.fallingWords.forEach(wordObj => {
                     wordObj.isActive = false;
@@ -786,21 +934,26 @@
                     letters.forEach(letter => {
                         letter.classList.remove('typed', 'current');
                     });
+                    // Remove highlight
+                    const overlay = wordObj.element.querySelector('.zombie-text-overlay');
+                    if (overlay) {
+                        overlay.classList.remove('border-yellow-500', 'bg-yellow-50', 'dark:bg-yellow-900/20');
+                    }
                 });
-                
+
                 if (!input) {
                     this.elements.currentTarget.textContent = 'Type the approaching words!';
                     return;
                 }
-                
+
                 // Find the best matching word (most letters typed correctly)
                 let bestMatch = null;
                 let maxCorrectLetters = 0;
-                
+
                 this.gameState.fallingWords.forEach(wordObj => {
                     const word = wordObj.word.toLowerCase();
                     let correctLetters = 0;
-                    
+
                     for (let i = 0; i < Math.min(input.length, word.length); i++) {
                         if (input[i] === word[i]) {
                             correctLetters++;
@@ -808,25 +961,26 @@
                             break;
                         }
                     }
-                    
+
                     if (correctLetters > maxCorrectLetters) {
                         maxCorrectLetters = correctLetters;
                         bestMatch = wordObj;
                     }
                 });
-                
+
                 if (bestMatch && maxCorrectLetters > 0) {
                     bestMatch.isActive = true;
-                    bestMatch.typedLetters = maxCorrectLetters;
-                    
+
                     const letters = bestMatch.element.querySelectorAll('.letter');
                     const word = bestMatch.word.toLowerCase();
-                    
+
                     // Check if this is a new letter hit (zombie gets shot!)
                     if (maxCorrectLetters > bestMatch.typedLetters) {
                         this.triggerZombieHitEffect(bestMatch);
                     }
-                    
+
+                    bestMatch.typedLetters = maxCorrectLetters;
+
                     // In dictation mode, reveal typed letters
                     if (this.gameState.gameMode === 'dictation') {
                         for (let i = 0; i < word.length; i++) {
@@ -848,34 +1002,37 @@
                         for (let i = 0; i < maxCorrectLetters; i++) {
                             letters[i].classList.add('typed');
                         }
-                        
+
                         if (maxCorrectLetters < word.length) {
                             letters[maxCorrectLetters].classList.add('current');
                         }
                     }
-                    
+
                     // Check if word is complete
                     if (input === word) {
                         this.destroyWord(bestMatch);
                         e.target.value = '';
                         return;
                     }
-                    
+
                     // Check if there's an incorrect letter
                     if (input.length > maxCorrectLetters) {
                         this.handleIncorrectLetter();
                         return;
                     }
-                    
+
                     this.elements.currentTarget.textContent = `Typing: ${bestMatch.word} (${maxCorrectLetters}/${word.length})`;
-                    
-                    // Highlight the active word
-                    bestMatch.element.classList.add('border-yellow-500', 'bg-yellow-50', 'dark:bg-yellow-900/20');
+
+                    // Highlight the active word overlay
+                    const overlay = bestMatch.element.querySelector('.zombie-text-overlay');
+                    if (overlay) {
+                        overlay.classList.add('border-yellow-500', 'bg-yellow-50', 'dark:bg-yellow-900/20');
+                    }
                 } else if (input.length > 0) {
                     this.handleIncorrectLetter();
                 }
             }
-            
+
             handleKeydown(e) {
                 // Allow space in words, but handle Enter to clear input if needed
                 if (e.key === 'Escape') {
@@ -884,14 +1041,17 @@
                     this.elements.currentTarget.textContent = 'Input cleared!';
                 }
             }
-            
+
             triggerZombieHitEffect(wordObj) {
+                // Prevent animation stacking
+                if (wordObj.isHit) return;
+
                 // Remove any existing hit effects
                 wordObj.element.classList.remove('hit-stun', 'hit-knockback');
-                
+
                 // Randomly choose between stun and knockback (70% stun, 30% knockback)
                 const hitType = Math.random() < 0.7 ? 'stun' : 'knockback';
-                
+
                 if (hitType === 'stun') {
                     wordObj.element.classList.add('hit-stun');
                     // Remove the class after animation completes
@@ -909,7 +1069,7 @@
                         }
                     }, 500);
                 }
-                
+
                 // Mark as hit to prevent animation stacking
                 wordObj.isHit = true;
                 setTimeout(() => {
@@ -920,26 +1080,26 @@
             destroyWord(wordObj) {
                 // Zombie death animation
                 wordObj.element.classList.add('zombie-death');
-                
+
                 setTimeout(() => {
                     wordObj.element.remove();
                 }, 800);
-                
+
                 // Calculate score based on word length
                 const points = wordObj.word.length * 10 * this.gameState.level;
                 this.gameState.score += points;
                 this.gameState.wordsTyped++;
                 this.gameState.correctCharacters += wordObj.word.length;
                 this.gameState.totalCharacters += wordObj.word.length;
-                
+
                 // Remove from falling words array
                 this.gameState.fallingWords = this.gameState.fallingWords.filter(w => w.id !== wordObj.id);
-                
+
                 // Check for level up
                 if (this.gameState.wordsTyped % 10 === 0) {
                     this.levelUp();
                 }
-                
+
                 this.elements.currentTarget.textContent = 'Zombie eliminated!';
                 setTimeout(() => {
                     if (this.gameState.isPlaying) {
@@ -947,12 +1107,12 @@
                     }
                 }, 1000);
             }
-            
+
             handleIncorrectLetter() {
                 const input = this.elements.wordInput;
                 input.classList.add('shake');
                 input.style.borderColor = '#ef4444';
-                
+
                 setTimeout(() => {
                     input.classList.remove('shake');
                     input.style.borderColor = '';
@@ -960,7 +1120,7 @@
                     const currentValue = input.value;
                     input.value = currentValue.slice(0, -1);
                 }, 200);
-                
+
                 this.elements.currentTarget.textContent = 'Wrong letter! Try again!';
             }
 
@@ -968,21 +1128,21 @@
                 const input = this.elements.wordInput;
                 input.classList.add('shake');
                 input.style.borderColor = '#ef4444';
-                
+
                 this.gameState.totalCharacters += input.value.length;
-                
+
                 setTimeout(() => {
                     input.classList.remove('shake');
                     input.style.borderColor = '';
                     input.value = '';
                 }, 300);
-                
+
                 this.elements.currentTarget.textContent = 'Miss! Try again!';
             }
-            
+
             loseLife() {
                 this.gameState.lives--;
-                
+
                 if (this.gameState.lives <= 0) {
                     this.gameOver();
                 } else {
@@ -993,12 +1153,12 @@
                     }, 500);
                 }
             }
-            
+
             levelUp() {
                 this.gameState.level++;
                 this.gameSpeed = Math.min(3, 1 + (this.gameState.level - 1) * 0.2);
                 this.spawnRate = Math.max(800, 2000 - (this.gameState.level - 1) * 100);
-                
+
                 // Visual feedback
                 this.elements.currentTarget.textContent = `LEVEL UP! Level ${this.gameState.level}`;
                 setTimeout(() => {
@@ -1007,7 +1167,7 @@
                     }
                 }, 2000);
             }
-            
+
             checkCollisions() {
                 // Remove words that reached the bottom
                 this.gameState.fallingWords.forEach(wordObj => {
@@ -1018,84 +1178,84 @@
                     }
                 });
             }
-            
+
             updateStats() {
                 this.elements.score.textContent = this.gameState.score.toLocaleString();
                 this.elements.lives.textContent = this.gameState.lives;
                 this.elements.level.textContent = this.gameState.level;
-                
+
                 // Calculate WPM
                 const timeElapsed = (Date.now() - this.gameState.startTime) / 60000; // minutes
                 const wpm = timeElapsed > 0 ? Math.round(this.gameState.wordsTyped / timeElapsed) : 0;
                 this.elements.wpm.textContent = wpm;
-                
+
                 // Calculate accuracy
-                const accuracy = this.gameState.totalCharacters > 0 ? 
+                const accuracy = this.gameState.totalCharacters > 0 ?
                     Math.round((this.gameState.correctCharacters / this.gameState.totalCharacters) * 100) : 100;
                 this.elements.accuracy.textContent = accuracy + '%';
             }
-            
+
             loadCustomWords() {
                 const fileInput = this.elements.csvFileInput;
                 if (!fileInput.files || !fileInput.files[0]) {
                     this.showCsvStatus('Please select a CSV file first.', 'error');
                     return;
                 }
-                
+
                 const file = fileInput.files[0];
                 const reader = new FileReader();
-                
+
                 reader.onload = (e) => {
                     try {
                         const csvText = e.target.result;
                         console.log('CSV Text:', csvText); // Debug
                         const customWords = this.parseCSV(csvText);
                         console.log('Parsed words:', customWords); // Debug
-                        
+
                         if (customWords.length === 0) {
                             this.showCsvStatus('No valid words found in CSV file. Please check format: word,translation', 'error');
                             return;
                         }
-                        
+
                         this.customWords = customWords;
                         this.words = customWords;
-                        
+
                         this.showCsvStatus(`Successfully loaded ${customWords.length} words from CSV.`, 'success');
                         this.elements.wordSource.textContent = 'CUSTOM';
                         this.elements.wordSource.className = 'text-sm font-bold text-blue-500';
-                        
+
                         // Show game mode selection when custom words are loaded
                         this.elements.gameModeSection.classList.remove('hidden');
-                        
+
                     } catch (error) {
                         console.error('CSV parsing error:', error);
                         this.showCsvStatus('Error reading CSV file: ' + error.message, 'error');
                     }
                 };
-                
+
                 reader.onerror = () => {
                     this.showCsvStatus('Error reading file.', 'error');
                 };
-                
+
                 // Specify UTF-8 encoding to handle Chinese characters
                 reader.readAsText(file, 'UTF-8');
             }
-            
+
             parseCSV(csvText) {
                 const lines = csvText.split('\n').filter(line => line.trim());
                 const words = [];
-                
+
                 for (let i = 0; i < lines.length; i++) {
                     const line = lines[i].trim();
                     if (!line) continue;
-                    
+
                     // Split by comma and handle quoted values
                     const parts = this.splitCSVLine(line);
-                    
+
                     if (parts.length >= 1) {
                         const word = parts[0].trim();
                         const translation = parts.length > 1 ? parts[1].trim() : word;
-                        
+
                         // Validate word (only letters and basic punctuation)
                         if (word && /^[a-zA-Z\s\-']+$/.test(word)) {
                             words.push({
@@ -1105,18 +1265,18 @@
                         }
                     }
                 }
-                
+
                 return words;
             }
-            
+
             splitCSVLine(line) {
                 const result = [];
                 let current = '';
                 let inQuotes = false;
-                
+
                 for (let i = 0; i < line.length; i++) {
                     const char = line[i];
-                    
+
                     if (char === '"') {
                         inQuotes = !inQuotes;
                     } else if (char === ',' && !inQuotes) {
@@ -1126,37 +1286,37 @@
                         current += char;
                     }
                 }
-                
+
                 result.push(current);
                 return result;
             }
-            
+
             useDefaultWords() {
                 this.customWords = null;
                 this.words = [...this.defaultWords];
-                
+
                 this.showCsvStatus('Using default word list.', 'success');
                 this.elements.wordSource.textContent = 'DEFAULT';
                 this.elements.wordSource.className = 'text-sm font-bold text-orange-500';
-                
+
                 // Hide game mode selection when using default words
                 this.elements.gameModeSection.classList.add('hidden');
                 this.setGameMode('normal');
-                
+
                 // Clear file input
                 this.elements.csvFileInput.value = '';
             }
-            
+
             setGameMode(mode) {
                 this.gameState.gameMode = mode;
-                
+
                 // Update UI
                 if (mode === 'normal') {
                     this.elements.gameMode.textContent = 'NORMAL';
                     this.elements.gameMode.className = 'text-sm font-bold text-purple-500';
                     this.elements.normalModeBtn.className = 'px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors text-sm';
                     this.elements.dictationModeBtn.className = 'px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500 transition-colors text-sm';
-                    
+
                     // Show translation button in normal mode
                     this.elements.translationBtn.style.display = 'block';
                 } else if (mode === 'dictation') {
@@ -1164,11 +1324,11 @@
                     this.elements.gameMode.className = 'text-sm font-bold text-pink-500';
                     this.elements.dictationModeBtn.className = 'px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600 transition-colors text-sm';
                     this.elements.normalModeBtn.className = 'px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500 transition-colors text-sm';
-                    
+
                     // Hide translation button in dictation mode (always show Chinese)
                     this.elements.translationBtn.style.display = 'none';
                 }
-                
+
                 // Update existing words if in game
                 if (this.gameState.isPlaying) {
                     this.gameState.fallingWords.forEach(wordObj => {
@@ -1176,11 +1336,11 @@
                     });
                 }
             }
-            
+
             showCsvStatus(message, type) {
                 const statusElement = this.elements.csvStatus;
                 statusElement.textContent = message;
-                
+
                 if (type === 'success') {
                     statusElement.className = 'text-sm text-green-600 dark:text-green-400';
                 } else if (type === 'error') {
@@ -1188,7 +1348,7 @@
                 } else {
                     statusElement.className = 'text-sm text-gray-600 dark:text-gray-400';
                 }
-                
+
                 // Clear status after 3 seconds
                 setTimeout(() => {
                     statusElement.textContent = '';
@@ -1197,26 +1357,26 @@
 
             gameOver() {
                 this.gameState.isPlaying = false;
-                
+
                 // Clear all falling words
                 this.gameState.fallingWords.forEach(wordObj => wordObj.element.remove());
                 this.gameState.fallingWords = [];
-                
+
                 // Show final stats
                 const timeElapsed = (Date.now() - this.gameState.startTime) / 60000;
                 const finalWpm = timeElapsed > 0 ? Math.round(this.gameState.wordsTyped / timeElapsed) : 0;
-                const finalAccuracy = this.gameState.totalCharacters > 0 ? 
+                const finalAccuracy = this.gameState.totalCharacters > 0 ?
                     Math.round((this.gameState.correctCharacters / this.gameState.totalCharacters) * 100) : 100;
-                
+
                 this.elements.finalScore.textContent = this.gameState.score.toLocaleString();
                 this.elements.finalWpm.textContent = finalWpm;
                 this.elements.finalAccuracy.textContent = finalAccuracy + '%';
                 this.elements.finalLevel.textContent = this.gameState.level;
-                
+
                 this.elements.gameOverScreen.classList.remove('hidden');
             }
         }
-        
+
         // Start the game when page loads
         window.addEventListener('load', () => {
             new TypingGame();
@@ -1224,3 +1384,4 @@
     </script>
 </body>
 </html>
+
