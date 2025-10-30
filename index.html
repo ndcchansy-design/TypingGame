@@ -841,16 +841,16 @@
                 wordElement.style.top = Math.max(80, Math.min(y, this.elements.gameArea.clientHeight - zombieHeight - 100)) + 'px';
 
                 // Animation duration based on level and zombie type
-                // Slowed down by 30% from original speed
-                let baseDuration = Math.max(5.2, (10 - this.gameState.level * 0.8) * 1.3);
+                // Significantly slowed down for better gameplay
+                let baseDuration = Math.max(8, (10 - this.gameState.level * 0.5) * 2);
 
                 // Zombie3 is faster
                 if (zombieType === 'zombie3') {
-                    baseDuration *= 0.7;
+                    baseDuration *= 0.75;
                 }
                 // Zombie2 is medium speed
                 else if (zombieType === 'zombie2') {
-                    baseDuration *= 0.85;
+                    baseDuration *= 0.9;
                 }
 
                 wordElement.style.animationDuration = baseDuration + 's';
