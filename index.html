@@ -824,21 +824,58 @@
                 // Set up display with zombie image and text overlay
                 this.updateWordDisplay(wordObj);
 
-                // Random position in a circle around center
-                const centerX = this.elements.gameArea.clientWidth / 2;
-                const centerY = this.elements.gameArea.clientHeight / 2;
-                const angle = Math.random() * 2 * Math.PI;
-                const radius = Math.min(this.elements.gameArea.clientWidth, this.elements.gameArea.clientHeight) * 0.3;
-
                 // Calculate zombie size based on viewport (10vw)
                 const zombieWidth = window.innerWidth * 0.1;
                 const zombieHeight = window.innerWidth * 0.175;
 
-                const x = centerX + Math.cos(angle) * radius - zombieWidth / 2;
-                const y = centerY + Math.sin(angle) * radius - zombieHeight / 2;
+                // Find a non-overlapping position
+                let x, y, attempts = 0;
+                let positionFound = false;
+                const maxAttempts = 50;
 
-                wordElement.style.left = Math.max(0, Math.min(x, this.elements.gameArea.clientWidth - zombieWidth)) + 'px';
-                wordElement.style.top = Math.max(80, Math.min(y, this.elements.gameArea.clientHeight - zombieHeight - 100)) + 'px';
+                while (!positionFound && attempts < maxAttempts) {
+                    // Random position in a circle around center
+                    const centerX = this.elements.gameArea.clientWidth / 2;
+                    const centerY = this.elements.gameArea.clientHeight / 2;
+                    const angle = Math.random() * 2 * Math.PI;
+                    const radius = Math.min(this.elements.gameArea.clientWidth, this.elements.gameArea.clientHeight) * 0.3;
+
+                    x = centerX + Math.cos(angle) * radius - zombieWidth / 2;
+                    y = centerY + Math.sin(angle) * radius - zombieHeight / 2;
+
+                    // Constrain to game area
+                    x = Math.max(0, Math.min(x, this.elements.gameArea.clientWidth - zombieWidth));
+                    y = Math.max(80, Math.min(y, this.elements.gameArea.clientHeight - zombieHeight - 100));
+
+                    // Check for overlap with existing zombies
+                    positionFound = true;
+                    for (let existingWordObj of this.gameState.fallingWords) {
+                        if (existingWordObj.id === wordObj.id) continue; // Skip self
+
+                        const existingRect = existingWordObj.element.getBoundingClientRect();
+                        const newRect = {
+                            left: x,
+                            top: y,
+                            right: x + zombieWidth,
+                            bottom: y + zombieHeight
+                        };
+
+                        // Check for overlap with padding (add 20px buffer)
+                        const buffer = 20;
+                        if (!(newRect.right + buffer < existingRect.left ||
+                              newRect.left - buffer > existingRect.right ||
+                              newRect.bottom + buffer < existingRect.top ||
+                              newRect.top - buffer > existingRect.bottom)) {
+                            positionFound = false;
+                            break;
+                        }
+                    }
+
+                    attempts++;
+                }
+
+                wordElement.style.left = x + 'px';
+                wordElement.style.top = y + 'px';
 
                 // Animation duration based on level and zombie type
                 // Significantly slowed down for better gameplay
