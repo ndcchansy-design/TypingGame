@@ -282,6 +282,93 @@
             animation: pulse-success 0.3s ease-in-out;
         }
 
+        @keyframes hpDamage {
+            0% {
+                filter: brightness(1);
+                transform: scale(1);
+            }
+            25% {
+                filter: brightness(2) drop-shadow(0 0 10px #ff0000);
+                transform: scale(1.1);
+            }
+            50% {
+                filter: brightness(0.5);
+                transform: scale(0.95);
+            }
+            100% {
+                filter: brightness(1);
+                transform: scale(1);
+            }
+        }
+
+        @keyframes hpHeal {
+            0% {
+                filter: brightness(1);
+                transform: scale(1);
+            }
+            50% {
+                filter: brightness(2) drop-shadow(0 0 15px #00ff00);
+                transform: scale(1.15);
+            }
+            100% {
+                filter: brightness(1);
+                transform: scale(1);
+            }
+        }
+
+        .hp-damage {
+            animation: hpDamage 0.5s ease-out;
+        }
+
+        .hp-heal {
+            animation: hpHeal 0.6s ease-out;
+        }
+
+        @keyframes itemDrop {
+            0% {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.5) rotate(0deg);
+            }
+            60% {
+                opacity: 1;
+                transform: translateY(0px) scale(1.2) rotate(180deg);
+            }
+            80% {
+                transform: scale(0.9) rotate(360deg);
+            }
+            100% {
+                transform: scale(1) rotate(360deg);
+            }
+        }
+
+        .health-item {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, #00ff00, #00aa00);
+            border: 3px solid #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            animation: itemDrop 0.8s ease-out, itemPulse 1.5s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            z-index: 5;
+        }
+
+        @keyframes itemPulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(0, 255, 0, 1);
+                transform: scale(1.1);
+            }
+        }
+
         .zombie-container {
             position: relative;
             display: inline-block;
@@ -361,9 +448,14 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <div class="text-center">
-                        <div class="text-2xl font-bold text-red-500" id="lives">3</div>
-                        <div class="text-xs text-gray-600 dark:text-gray-400">LIVES</div>
+                    <div class="text-center min-w-[200px]">
+                        <div class="relative w-48 h-6 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden border-2 border-gray-400 dark:border-gray-500">
+                            <div id="hpBar" class="absolute top-0 left-0 h-full bg-gradient-to-r from-red-500 to-red-600 transition-all duration-300 ease-out" style="width: 100%"></div>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span class="text-xs font-bold text-white drop-shadow-lg" id="hpText">100 / 100</span>
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">HEALTH</div>
                     </div>
                     <div class="text-center">
                         <div class="text-sm font-bold text-orange-500" id="wordSource">DEFAULT</div>
@@ -589,11 +681,19 @@
                     zombie3: 'images/Zombie3.png'
                 };
 
+                // Zombie stats: attack damage
+                this.zombieStats = {
+                    zombie1: { damage: 10, name: 'Walker' },
+                    zombie2: { damage: 15, name: 'Swinger' },
+                    zombie3: { damage: 20, name: 'Rusher' }
+                };
+
                 this.gameState = {
                     isPlaying: false,
                     isPaused: false,
                     score: 0,
-                    lives: 3,
+                    hp: 100,
+                    maxHp: 100,
                     level: 1,
                     wordsTyped: 0,
                     totalCharacters: 0,
@@ -602,7 +702,8 @@
                     fallingWords: [],
                     wordIdCounter: 0,
                     showTranslation: true,
-                    gameMode: 'normal' // 'normal' or 'dictation'
+                    gameMode: 'normal', // 'normal' or 'dictation'
+                    healthItems: []
                 };
 
                 this.defaultWords = [...this.words]; // Store original words
@@ -627,7 +728,8 @@
                     wpm: document.getElementById('wpm'),
                     accuracy: document.getElementById('accuracy'),
                     level: document.getElementById('level'),
-                    lives: document.getElementById('lives'),
+                    hpBar: document.getElementById('hpBar'),
+                    hpText: document.getElementById('hpText'),
                     wordSource: document.getElementById('wordSource'),
 
                     // Screens
@@ -693,7 +795,8 @@
                     isPlaying: true,
                     isPaused: false,
                     score: 0,
-                    lives: 3,
+                    hp: 100,
+                    maxHp: 100,
                     level: 1,
                     wordsTyped: 0,
                     totalCharacters: 0,
@@ -702,7 +805,8 @@
                     fallingWords: [],
                     wordIdCounter: 0,
                     showTranslation: currentTranslationSetting,
-                    gameMode: currentGameMode
+                    gameMode: currentGameMode,
+                    healthItems: []
                 };
 
                 this.gameSpeed = 1;
@@ -815,9 +919,12 @@
                     translation: wordData.translation,
                     id: wordElement.id,
                     zombieType: zombieType,
+                    damage: this.zombieStats[zombieType].damage,
                     typedLetters: 0,
                     isActive: false,
-                    isHit: false
+                    isHit: false,
+                    isAttacking: false,
+                    lastAttackTime: 0
                 };
 
                 this.gameState.fallingWords.push(wordObj);
@@ -943,6 +1050,8 @@
             }
 
             updateFallingWords() {
+                const now = Date.now();
+
                 this.gameState.fallingWords = this.gameState.fallingWords.filter(wordObj => {
                     const element = wordObj.element;
                     const computedStyle = window.getComputedStyle(element);
@@ -953,10 +1062,34 @@
                         const matrix = new DOMMatrix(transform);
                         const scaleX = Math.sqrt(matrix.a * matrix.a + matrix.b * matrix.b);
 
-                        if (scaleX > 1.2) {
-                            element.remove();
-                            this.loseLife();
-                            return false;
+                        if (scaleX >= 1.4) {
+                            // Zombie reached the player
+                            if (!wordObj.isAttacking) {
+                                // First time reaching player - pause and attack
+                                wordObj.isAttacking = true;
+                                wordObj.lastAttackTime = now;
+                                element.style.animationPlayState = 'paused';
+
+                                // First attack
+                                this.takeDamage(wordObj.damage);
+
+                                // Add attacking visual effect
+                                element.style.filter = 'brightness(1.3) drop-shadow(0 0 20px #ff0000)';
+                            } else {
+                                // Continue attacking every 2 seconds
+                                if (now - wordObj.lastAttackTime >= 2000) {
+                                    wordObj.lastAttackTime = now;
+                                    this.takeDamage(wordObj.damage);
+
+                                    // Attack flash effect
+                                    element.style.filter = 'brightness(2) drop-shadow(0 0 30px #ff0000)';
+                                    setTimeout(() => {
+                                        if (element.parentNode) {
+                                            element.style.filter = 'brightness(1.3) drop-shadow(0 0 20px #ff0000)';
+                                        }
+                                    }, 200);
+                                }
+                            }
                         }
                     }
 
@@ -1128,6 +1261,11 @@
             }
 
             destroyWord(wordObj) {
+                // Get zombie position before death animation
+                const rect = wordObj.element.getBoundingClientRect();
+                const dropX = rect.left + rect.width / 2;
+                const dropY = rect.top + rect.height / 2;
+
                 // Zombie death animation
                 wordObj.element.classList.add('zombie-death');
 
@@ -1142,6 +1280,11 @@
                 this.gameState.correctCharacters += wordObj.word.length;
                 this.gameState.totalCharacters += wordObj.word.length;
 
+                // 5% chance to drop health item
+                if (Math.random() < 0.05) {
+                    this.dropHealthItem(dropX, dropY);
+                }
+
                 // Remove from falling words array
                 this.gameState.fallingWords = this.gameState.fallingWords.filter(w => w.id !== wordObj.id);
 
@@ -1154,6 +1297,72 @@
                 setTimeout(() => {
                     if (this.gameState.isPlaying) {
                         this.elements.currentTarget.textContent = 'Keep shooting!';
+                    }
+                }, 1000);
+            }
+
+            dropHealthItem(x, y) {
+                const item = document.createElement('div');
+                item.className = 'health-item';
+                item.innerHTML = '+';
+                item.style.left = x + 'px';
+                item.style.top = y + 'px';
+
+                const itemId = 'health-' + Date.now();
+                item.id = itemId;
+
+                this.elements.gameArea.appendChild(item);
+
+                // Add to health items array
+                this.gameState.healthItems.push({
+                    id: itemId,
+                    element: item,
+                    x: x,
+                    y: y
+                });
+
+                // Click to collect
+                item.addEventListener('click', () => {
+                    this.collectHealthItem(itemId);
+                });
+
+                // Auto-remove after 10 seconds
+                setTimeout(() => {
+                    if (document.getElementById(itemId)) {
+                        item.style.opacity = '0';
+                        item.style.transform = 'scale(0)';
+                        setTimeout(() => {
+                            item.remove();
+                            this.gameState.healthItems = this.gameState.healthItems.filter(h => h.id !== itemId);
+                        }, 300);
+                    }
+                }, 10000);
+            }
+
+            collectHealthItem(itemId) {
+                const item = this.gameState.healthItems.find(h => h.id === itemId);
+                if (!item) return;
+
+                const healAmount = 20;
+                this.healHP(healAmount);
+
+                // Visual feedback
+                const element = item.element;
+                element.style.transition = 'all 0.5s ease-out';
+                element.style.transform = 'translateY(-100px) scale(2)';
+                element.style.opacity = '0';
+
+                setTimeout(() => {
+                    element.remove();
+                }, 500);
+
+                // Remove from array
+                this.gameState.healthItems = this.gameState.healthItems.filter(h => h.id !== itemId);
+
+                this.elements.currentTarget.textContent = '+20 HP!';
+                setTimeout(() => {
+                    if (this.gameState.isPlaying) {
+                        this.elements.currentTarget.textContent = 'Keep typing!';
                     }
                 }, 1000);
             }
@@ -1190,17 +1399,51 @@
                 this.elements.currentTarget.textContent = 'Miss! Try again!';
             }
 
-            loseLife() {
-                this.gameState.lives--;
+            takeDamage(damage) {
+                this.gameState.hp = Math.max(0, this.gameState.hp - damage);
+                this.updateHP(false); // false = damage
 
-                if (this.gameState.lives <= 0) {
+                if (this.gameState.hp <= 0) {
                     this.gameOver();
+                }
+            }
+
+            healHP(amount) {
+                this.gameState.hp = Math.min(this.gameState.maxHp, this.gameState.hp + amount);
+                this.updateHP(true); // true = heal
+            }
+
+            updateHP(isHeal = false) {
+                const hpPercentage = (this.gameState.hp / this.gameState.maxHp) * 100;
+                this.elements.hpBar.style.width = hpPercentage + '%';
+                this.elements.hpText.textContent = `${this.gameState.hp} / ${this.gameState.maxHp}`;
+
+                // Update HP bar color based on health
+                if (hpPercentage > 60) {
+                    this.elements.hpBar.className = 'absolute top-0 left-0 h-full bg-gradient-to-r from-green-500 to-green-600 transition-all duration-300 ease-out';
+                } else if (hpPercentage > 30) {
+                    this.elements.hpBar.className = 'absolute top-0 left-0 h-full bg-gradient-to-r from-yellow-500 to-orange-500 transition-all duration-300 ease-out';
                 } else {
-                    // Visual feedback for losing life
+                    this.elements.hpBar.className = 'absolute top-0 left-0 h-full bg-gradient-to-r from-red-500 to-red-600 transition-all duration-300 ease-out';
+                }
+
+                // Add animation effect
+                if (isHeal) {
+                    this.elements.hpBar.classList.add('hp-heal');
+                    setTimeout(() => {
+                        this.elements.hpBar.classList.remove('hp-heal');
+                    }, 600);
+                } else {
+                    this.elements.hpBar.classList.add('hp-damage');
+                    setTimeout(() => {
+                        this.elements.hpBar.classList.remove('hp-damage');
+                    }, 500);
+
+                    // Screen flash on damage
                     document.body.style.background = '#fee2e2';
                     setTimeout(() => {
                         document.body.style.background = '';
-                    }, 500);
+                    }, 200);
                 }
             }
 
@@ -1231,8 +1474,12 @@
 
             updateStats() {
                 this.elements.score.textContent = this.gameState.score.toLocaleString();
-                this.elements.lives.textContent = this.gameState.lives;
                 this.elements.level.textContent = this.gameState.level;
+
+                // Update HP bar
+                const hpPercentage = (this.gameState.hp / this.gameState.maxHp) * 100;
+                this.elements.hpBar.style.width = hpPercentage + '%';
+                this.elements.hpText.textContent = `${this.gameState.hp} / ${this.gameState.maxHp}`;
 
                 // Calculate WPM
                 const timeElapsed = (Date.now() - this.gameState.startTime) / 60000; // minutes
