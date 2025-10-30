@@ -17,21 +17,144 @@
         }
     </script>
     <style>
-        @keyframes approach {
-            from { 
-                transform: translateZ(-1000px) scale(0.1);
+        @keyframes zombieApproach {
+            0% { 
+                transform: translateZ(-1000px) scale(0.1) translateX(0px) rotate(0deg);
                 opacity: 0.3;
             }
-            to { 
-                transform: translateZ(0) scale(1.5);
+            10% { 
+                transform: translateZ(-800px) scale(0.2) translateX(-10px) rotate(-2deg);
+                opacity: 0.4;
+            }
+            20% { 
+                transform: translateZ(-600px) scale(0.35) translateX(8px) rotate(1deg);
+                opacity: 0.5;
+            }
+            30% { 
+                transform: translateZ(-400px) scale(0.5) translateX(-15px) rotate(-1.5deg);
+                opacity: 0.6;
+            }
+            40% { 
+                transform: translateZ(-200px) scale(0.7) translateX(12px) rotate(2deg);
+                opacity: 0.75;
+            }
+            50% { 
+                transform: translateZ(-100px) scale(0.85) translateX(-8px) rotate(-0.5deg);
+                opacity: 0.85;
+            }
+            60% { 
+                transform: translateZ(-50px) scale(1.0) translateX(5px) rotate(1deg);
+                opacity: 0.9;
+            }
+            70% { 
+                transform: translateZ(-25px) scale(1.1) translateX(-7px) rotate(-1deg);
+                opacity: 0.95;
+            }
+            80% { 
+                transform: translateZ(-10px) scale(1.25) translateX(3px) rotate(0.5deg);
+                opacity: 0.98;
+            }
+            90% { 
+                transform: translateZ(-5px) scale(1.35) translateX(-2px) rotate(-0.5deg);
+                opacity: 1;
+            }
+            100% { 
+                transform: translateZ(0) scale(1.5) translateX(0px) rotate(0deg);
                 opacity: 1;
             }
         }
         
-        .approaching-word {
-            animation: approach linear;
+        .zombie-word {
+            animation: zombieApproach linear;
             perspective: 1000px;
             transform-style: preserve-3d;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5));
+        }
+        
+        @keyframes zombieStagger {
+            0% { transform: translateX(0px) rotate(0deg); }
+            25% { transform: translateX(-3px) rotate(-1deg); }
+            50% { transform: translateX(2px) rotate(1deg); }
+            75% { transform: translateX(-1px) rotate(-0.5deg); }
+            100% { transform: translateX(0px) rotate(0deg); }
+        }
+        
+        .zombie-idle {
+            animation: zombieStagger 2s ease-in-out infinite;
+        }
+        
+        @keyframes hitStun {
+            0% { 
+                transform: scale(1) translateX(0px);
+                filter: brightness(1) hue-rotate(0deg);
+            }
+            50% { 
+                transform: scale(0.95) translateX(-5px);
+                filter: brightness(1.5) hue-rotate(0deg) drop-shadow(0 0 10px #ff0000);
+            }
+            100% { 
+                transform: scale(1) translateX(0px);
+                filter: brightness(1) hue-rotate(0deg);
+            }
+        }
+        
+        @keyframes hitKnockback {
+            0% { 
+                transform: scale(1) translateX(0px) rotate(0deg);
+                filter: brightness(1);
+            }
+            30% { 
+                transform: scale(0.9) translateX(-15px) rotate(-3deg);
+                filter: brightness(1.8) drop-shadow(0 0 15px #ff4444);
+            }
+            60% { 
+                transform: scale(0.95) translateX(-10px) rotate(-1deg);
+                filter: brightness(1.3);
+            }
+            100% { 
+                transform: scale(1) translateX(0px) rotate(0deg);
+                filter: brightness(1);
+            }
+        }
+        
+        .hit-stun {
+            animation: hitStun 0.3s ease-out !important;
+        }
+        
+        .hit-knockback {
+            animation: hitKnockback 0.5s ease-out !important;
+        }
+        
+        @keyframes zombieDeath {
+            0% { 
+                transform: scale(1) rotate(0deg);
+                filter: brightness(1);
+                opacity: 1;
+            }
+            25% { 
+                transform: scale(1.1) rotate(-5deg);
+                filter: brightness(2) hue-rotate(0deg) drop-shadow(0 0 20px #ff0000);
+                opacity: 1;
+            }
+            50% { 
+                transform: scale(0.9) rotate(5deg);
+                filter: brightness(1.5) hue-rotate(30deg);
+                opacity: 0.8;
+            }
+            75% { 
+                transform: scale(0.7) rotate(-10deg);
+                filter: brightness(0.5) hue-rotate(60deg);
+                opacity: 0.4;
+            }
+            100% { 
+                transform: scale(0.3) rotate(15deg);
+                filter: brightness(0) grayscale(1);
+                opacity: 0;
+            }
+        }
+        
+        .zombie-death {
+            animation: zombieDeath 0.8s ease-out forwards !important;
         }
         
         .letter {
@@ -555,7 +678,7 @@
             
             createFallingWord(wordData) {
                 const wordElement = document.createElement('div');
-                wordElement.className = 'absolute font-bold px-4 py-2 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-lg approaching-word';
+                wordElement.className = 'absolute font-bold px-4 py-2 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-lg zombie-word';
                 wordElement.id = `word-${this.gameState.wordIdCounter++}`;
                 
                 this.elements.gameArea.appendChild(wordElement);
@@ -566,7 +689,8 @@
                     translation: wordData.translation,
                     id: wordElement.id,
                     typedLetters: 0,
-                    isActive: false
+                    isActive: false,
+                    isHit: false
                 };
                 
                 this.gameState.fallingWords.push(wordObj);
@@ -589,6 +713,13 @@
                 // Animation duration based on level (faster at higher levels)
                 const duration = Math.max(4, 10 - this.gameState.level * 0.8);
                 wordElement.style.animationDuration = duration + 's';
+                
+                // Add zombie idle animation when approaching is complete
+                setTimeout(() => {
+                    if (wordElement.parentNode) {
+                        wordElement.classList.add('zombie-idle');
+                    }
+                }, duration * 1000);
             }
             
             updateWordDisplay(wordObj) {
@@ -691,6 +822,11 @@
                     const letters = bestMatch.element.querySelectorAll('.letter');
                     const word = bestMatch.word.toLowerCase();
                     
+                    // Check if this is a new letter hit (zombie gets shot!)
+                    if (maxCorrectLetters > bestMatch.typedLetters) {
+                        this.triggerZombieHitEffect(bestMatch);
+                    }
+                    
                     // In dictation mode, reveal typed letters
                     if (this.gameState.gameMode === 'dictation') {
                         for (let i = 0; i < word.length; i++) {
@@ -749,13 +885,45 @@
                 }
             }
             
+            triggerZombieHitEffect(wordObj) {
+                // Remove any existing hit effects
+                wordObj.element.classList.remove('hit-stun', 'hit-knockback');
+                
+                // Randomly choose between stun and knockback (70% stun, 30% knockback)
+                const hitType = Math.random() < 0.7 ? 'stun' : 'knockback';
+                
+                if (hitType === 'stun') {
+                    wordObj.element.classList.add('hit-stun');
+                    // Remove the class after animation completes
+                    setTimeout(() => {
+                        if (wordObj.element.parentNode) {
+                            wordObj.element.classList.remove('hit-stun');
+                        }
+                    }, 300);
+                } else {
+                    wordObj.element.classList.add('hit-knockback');
+                    // Remove the class after animation completes
+                    setTimeout(() => {
+                        if (wordObj.element.parentNode) {
+                            wordObj.element.classList.remove('hit-knockback');
+                        }
+                    }, 500);
+                }
+                
+                // Mark as hit to prevent animation stacking
+                wordObj.isHit = true;
+                setTimeout(() => {
+                    wordObj.isHit = false;
+                }, 600);
+            }
+
             destroyWord(wordObj) {
-                // Add success animation
-                wordObj.element.classList.add('pulse-success');
+                // Zombie death animation
+                wordObj.element.classList.add('zombie-death');
                 
                 setTimeout(() => {
                     wordObj.element.remove();
-                }, 300);
+                }, 800);
                 
                 // Calculate score based on word length
                 const points = wordObj.word.length * 10 * this.gameState.level;
@@ -772,10 +940,10 @@
                     this.levelUp();
                 }
                 
-                this.elements.currentTarget.textContent = 'Great shot!';
+                this.elements.currentTarget.textContent = 'Zombie eliminated!';
                 setTimeout(() => {
                     if (this.gameState.isPlaying) {
-                        this.elements.currentTarget.textContent = 'Keep typing!';
+                        this.elements.currentTarget.textContent = 'Keep shooting!';
                     }
                 }, 1000);
             }
