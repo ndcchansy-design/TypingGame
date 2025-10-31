@@ -532,9 +532,17 @@
                     <button id="pauseBtn" class="px-4 py-2 bg-primary text-white rounded hover:bg-primary/80 transition-colors">
                         PAUSE
                     </button>
+                    <button id="musicBtn" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors">
+                        🔊 MUSIC
+                    </button>
                 </div>
             </div>
         </div>
+
+        <!-- Background Music -->
+        <audio id="bgMusic" loop>
+            <source src="Audio/殭屍末日狂打.mp3" type="audio/mpeg">
+        </audio>
 
         <!-- Game Area -->
         <div id="gameArea" class="h-full relative">
@@ -697,7 +705,7 @@
                     { word: 'printer', translation: '印表機' },
                     { word: 'network', translation: '網路' },
                     { word: 'internet', translation: '網際網路' },
-                    { word: 'website', translation: '網���' },
+                    { word: 'website', translation: '網站' },
                     { word: 'download', translation: '下載' },
                     { word: 'upload', translation: '上傳' },
                     { word: 'software', translation: '軟體' },
@@ -764,7 +772,8 @@
                     wordIdCounter: 0,
                     showTranslation: true,
                     gameMode: 'normal', // 'normal' or 'dictation'
-                    healthItems: []
+                    healthItems: [],
+                    musicEnabled: true
                 };
 
                 this.defaultWords = [...this.words]; // Store original words
@@ -804,8 +813,12 @@
                     pauseBtn: document.getElementById('pauseBtn'),
                     resumeBtn: document.getElementById('resumeBtn'),
                     translationBtn: document.getElementById('translationBtn'),
+                    musicBtn: document.getElementById('musicBtn'),
                     loadCsvBtn: document.getElementById('loadCsvBtn'),
                     clearCsvBtn: document.getElementById('clearCsvBtn'),
+
+                    // Audio
+                    bgMusic: document.getElementById('bgMusic'),
 
                     // CSV elements
                     csvFileInput: document.getElementById('csvFileInput'),
@@ -831,6 +844,7 @@
                 this.elements.pauseBtn.addEventListener('click', () => this.togglePause());
                 this.elements.resumeBtn.addEventListener('click', () => this.togglePause());
                 this.elements.translationBtn.addEventListener('click', () => this.toggleTranslation());
+                this.elements.musicBtn.addEventListener('click', () => this.toggleMusic());
                 this.elements.loadCsvBtn.addEventListener('click', () => this.loadCustomWords());
                 this.elements.clearCsvBtn.addEventListener('click', () => this.useDefaultWords());
                 this.elements.normalModeBtn.addEventListener('click', () => this.setGameMode('normal'));
@@ -851,6 +865,7 @@
                 // Preserve translation setting and game mode
                 const currentTranslationSetting = this.gameState.showTranslation;
                 const currentGameMode = this.gameState.gameMode;
+                const currentMusicEnabled = this.gameState.musicEnabled;
 
                 this.gameState = {
                     isPlaying: true,
@@ -867,7 +882,8 @@
                     wordIdCounter: 0,
                     showTranslation: currentTranslationSetting,
                     gameMode: currentGameMode,
-                    healthItems: []
+                    healthItems: [],
+                    musicEnabled: currentMusicEnabled
                 };
 
                 this.gameSpeed = 1;
@@ -883,8 +899,42 @@
                 // Clear any existing words
                 this.elements.gameArea.innerHTML = '';
 
+                // Start background music
+                if (this.gameState.musicEnabled) {
+                    this.playMusic();
+                }
+
                 this.updateStats();
                 this.gameLoop();
+            }
+
+            playMusic() {
+                this.elements.bgMusic.volume = 0.4; // Set volume to 40%
+                this.elements.bgMusic.play().catch(err => {
+                    console.log('Music autoplay failed:', err);
+                    // Music will play when user interacts with the page
+                });
+            }
+
+            stopMusic() {
+                this.elements.bgMusic.pause();
+                this.elements.bgMusic.currentTime = 0;
+            }
+
+            toggleMusic() {
+                this.gameState.musicEnabled = !this.gameState.musicEnabled;
+
+                if (this.gameState.musicEnabled) {
+                    this.elements.musicBtn.textContent = '🔊 MUSIC';
+                    this.elements.musicBtn.className = 'px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors';
+                    if (this.gameState.isPlaying && !this.gameState.isPaused) {
+                        this.playMusic();
+                    }
+                } else {
+                    this.elements.musicBtn.textContent = '🔇 MUSIC';
+                    this.elements.musicBtn.className = 'px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors';
+                    this.stopMusic();
+                }
             }
 
             restartGame() {
@@ -897,10 +947,18 @@
                 if (this.gameState.isPaused) {
                     this.elements.pauseScreen.classList.remove('hidden');
                     this.elements.pauseBtn.textContent = 'RESUME';
+                    // Pause music
+                    if (this.gameState.musicEnabled) {
+                        this.elements.bgMusic.pause();
+                    }
                 } else {
                     this.elements.pauseScreen.classList.add('hidden');
                     this.elements.pauseBtn.textContent = 'PAUSE';
                     this.elements.wordInput.focus();
+                    // Resume music
+                    if (this.gameState.musicEnabled) {
+                        this.elements.bgMusic.play().catch(err => console.log('Music resume failed:', err));
+                    }
                 }
             }
 
@@ -1707,6 +1765,9 @@
 
             gameOver() {
                 this.gameState.isPlaying = false;
+
+                // Stop music
+                this.stopMusic();
 
                 // Clear all falling words
                 this.gameState.fallingWords.forEach(wordObj => wordObj.element.remove());
