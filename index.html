@@ -771,7 +771,7 @@
                 this.customWords = null; // Store custom uploaded words
 
                 this.gameSpeed = 1;
-                this.spawnRate = 2000; // milliseconds
+                this.spawnRate = 4000; // milliseconds - slower initial spawn
                 this.lastSpawnTime = 0;
 
                 this.initializeElements();
@@ -871,7 +871,7 @@
                 };
 
                 this.gameSpeed = 1;
-                this.spawnRate = 2000;
+                this.spawnRate = 4000;
                 this.lastSpawnTime = 0;
 
                 this.elements.startScreen.classList.add('hidden');
@@ -1503,8 +1503,13 @@
 
             levelUp() {
                 this.gameState.level++;
-                this.gameSpeed = Math.min(3, 1 + (this.gameState.level - 1) * 0.2);
-                this.spawnRate = Math.max(800, 2000 - (this.gameState.level - 1) * 100);
+
+                // Gentler difficulty curve
+                // gameSpeed increases slowly: 1.0 -> 1.5 (caps at level 11)
+                this.gameSpeed = Math.min(1.5, 1 + (this.gameState.level - 1) * 0.05);
+
+                // spawnRate decreases gradually: 4000ms -> 600ms (caps at level 23)
+                this.spawnRate = Math.max(600, 4000 - (this.gameState.level - 1) * 150);
 
                 // Visual feedback
                 this.elements.currentTarget.textContent = `LEVEL UP! Level ${this.gameState.level}`;
