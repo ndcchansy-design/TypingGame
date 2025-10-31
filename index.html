@@ -343,8 +343,8 @@
 
         .health-item {
             position: absolute;
-            width: 50px;
-            height: 50px;
+            width: 100px;
+            height: 100px;
             animation: itemDrop 0.8s ease-out, itemFloat 2s ease-in-out infinite;
             filter: drop-shadow(0 0 15px rgba(0, 255, 0, 0.9));
             z-index: 5;
@@ -697,7 +697,7 @@
                     { word: 'printer', translation: '印表機' },
                     { word: 'network', translation: '網路' },
                     { word: 'internet', translation: '網際網路' },
-                    { word: 'website', translation: '網站' },
+                    { word: 'website', translation: '網���' },
                     { word: 'download', translation: '下載' },
                     { word: 'upload', translation: '上傳' },
                     { word: 'software', translation: '軟體' },
@@ -1366,8 +1366,8 @@
                 const item = document.createElement('div');
                 item.className = 'health-item';
                 item.innerHTML = '<img src="images/Medicine.png" alt="Health Pack">';
-                item.style.left = (x - 25) + 'px'; // Center the 50px item
-                item.style.top = (y - 25) + 'px';
+                item.style.left = (x - 50) + 'px'; // Center the 100px item
+                item.style.top = (y - 50) + 'px';
 
                 const itemId = 'health-' + Date.now();
                 item.id = itemId;
