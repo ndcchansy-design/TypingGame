@@ -544,6 +544,11 @@
             <source src="Audio/殭屍末日狂打.mp3" type="audio/mpeg">
         </audio>
 
+        <!-- Typing Sound Effect -->
+        <audio id="gunshotSound" preload="auto">
+            <source src="Sound/Gunshot.wav" type="audio/wav">
+        </audio>
+
         <!-- Game Area -->
         <div id="gameArea" class="h-full relative">
             <!-- Falling zombie words will be added here -->
@@ -819,6 +824,7 @@
 
                     // Audio
                     bgMusic: document.getElementById('bgMusic'),
+                    gunshotSound: document.getElementById('gunshotSound'),
 
                     // CSV elements
                     csvFileInput: document.getElementById('csvFileInput'),
@@ -919,6 +925,15 @@
             stopMusic() {
                 this.elements.bgMusic.pause();
                 this.elements.bgMusic.currentTime = 0;
+            }
+
+            playGunshotSound() {
+                // Reset the audio to start for rapid-fire typing
+                this.elements.gunshotSound.currentTime = 0;
+                this.elements.gunshotSound.play().catch(err => {
+                    // Silently handle autoplay errors
+                    console.log('Gunshot sound play failed:', err);
+                });
             }
 
             toggleMusic() {
@@ -1271,6 +1286,7 @@
                     // Check if this is a new letter hit (zombie gets shot!)
                     if (maxCorrectLetters > bestMatch.typedLetters) {
                         this.triggerZombieHitEffect(bestMatch);
+                        this.playGunshotSound(); // Play gunshot sound on each correct letter
                     }
 
                     bestMatch.typedLetters = maxCorrectLetters;
