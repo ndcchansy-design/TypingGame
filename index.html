@@ -1487,12 +1487,10 @@
                 setTimeout(() => {
                     input.classList.remove('shake');
                     input.style.borderColor = '';
-                    // Remove the last incorrect character
-                    const currentValue = input.value;
-                    input.value = currentValue.slice(0, -1);
+                    // Players must manually correct their mistakes (no auto-delete)
                 }, 200);
 
-                this.elements.currentTarget.textContent = 'Wrong letter! Try again!';
+                this.elements.currentTarget.textContent = 'Wrong letter! Press Backspace to correct!';
             }
 
             handleMiss() {
