@@ -1818,7 +1818,7 @@
                             <img src="${zombieImage}" alt="Zombie" class="zombie-image">
                             <div class="zombie-text-overlay">
                                 <div class="text-gray-400 font-mono tracking-wider" style="font-size: 1vw;">${letterSpans}</div>
-                                <div class="font-bold text-blue-600 dark:text-blue-400" style="margin-top: 0.4vw; font-size: 1vw;">${translation}</div>
+                                <div class="font-bold text-blue-600 dark:text-blue-400" style="margin-top: 0.4vw; font-size: 1.3vw;">${translation}</div>
                             </div>
                         </div>
                     `;
@@ -1829,7 +1829,7 @@
                     ).join('');
 
                     const translationHtml = this.gameState.showTranslation ?
-                        `<div class="text-gray-600 dark:text-gray-400" style="margin-top: 0.3vw; font-size: 0.9vw;">(${translation})</div>` : '';
+                        `<div class="text-gray-600 dark:text-gray-400" style="margin-top: 0.3vw; font-size: 1.1vw;">(${translation})</div>` : '';
 
                     wordObj.element.innerHTML = `
                         <div class="zombie-container">
@@ -1947,6 +1947,10 @@
                     if (maxCorrectLetters > bestMatch.typedLetters) {
                         this.triggerZombieHitEffect(bestMatch);
                         this.playGunshotSound(); // Play gunshot sound on each correct letter
+
+                        // Track accuracy: correct keystroke
+                        this.gameState.correctCharacters++;
+                        this.gameState.totalCharacters++;
                     }
 
                     bestMatch.typedLetters = maxCorrectLetters;
@@ -1987,6 +1991,8 @@
 
                     // Check if there's an incorrect letter
                     if (input.length > maxCorrectLetters) {
+                        // Track accuracy: incorrect keystroke
+                        this.gameState.totalCharacters++;
                         this.handleIncorrectLetter();
                         return;
                     }
@@ -1999,6 +2005,8 @@
                         overlay.classList.add('border-yellow-500', 'bg-yellow-50', 'dark:bg-yellow-900/20');
                     }
                 } else if (input.length > 0) {
+                    // Track accuracy: incorrect keystroke (no matching word)
+                    this.gameState.totalCharacters++;
                     this.handleIncorrectLetter();
                 }
             }
@@ -2072,8 +2080,7 @@
                 const points = wordObj.word.length * 10 * this.gameState.level;
                 this.gameState.score += points;
                 this.gameState.wordsTyped++;
-                this.gameState.correctCharacters += wordObj.word.length;
-                this.gameState.totalCharacters += wordObj.word.length;
+                // Note: correctCharacters and totalCharacters are now tracked per keystroke in handleInput()
 
                 // 5% chance to drop health item
                 if (Math.random() < 0.05) {
@@ -2174,7 +2181,7 @@
                 input.classList.add('shake');
                 input.style.borderColor = '#ef4444';
 
-                this.gameState.totalCharacters += input.value.length;
+                // Accuracy is now tracked per keystroke in handleInput()
 
                 setTimeout(() => {
                     input.classList.remove('shake');
